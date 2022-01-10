@@ -21,6 +21,7 @@ class Body(MDBoxLayout):
     nom = ObjectProperty(None)
 
     montantDette = ObjectProperty(None)
+    montantPaiement = ObjectProperty(None)
 
     MONTH = [
         "janvier", "fevrier", "mars", "avril",
@@ -206,8 +207,9 @@ class Body(MDBoxLayout):
     def getUserInfosForPaiement(self, ID):
         userID = ID
         to_be_used = list()  # Used to keep the different month value for a while
-        if (userID == ""):
+        if (userID == "" or userID.isnumeric()==False):
             self.ids["pUserName"].text = ""
+            self.ids.idForPaiement.text = ''
             self.hideButton()
             self.clearPaiement()
         else:
@@ -256,7 +258,7 @@ class Body(MDBoxLayout):
     def updateSomme(self, ID):
         try:
             userID = ID
-            if (userID == ""):
+            if (userID == "" or userID.isnumeric()==False):
                 pass
             else:
                 backend.DataBase.updateSomme(userID)
@@ -325,6 +327,8 @@ class Body(MDBoxLayout):
         if (userID==""):
             self.ids["detteInfos"].text = "[color=#ffff00]Aucun(e) employée trouvée...[/color]"
             Clock.schedule_once(self.hideDetteInfos, 3)
+        elif (userID.isnumeric()==False):
+            self.clearDette()
         else:
             userInfos = backend.DataBase.getEmployeeByID(userID)
             if (userID=="" or userInfos==[]):
@@ -348,7 +352,7 @@ class Body(MDBoxLayout):
 
     def updateSommeDette(self, ID):
         userID = ID
-        if (userID==""):
+        if (userID=="" or userID.isnumeric()==False):
             pass
         else:
             backend.DataBase.updateSommeDette(userID)
@@ -372,7 +376,7 @@ class Body(MDBoxLayout):
 
 #================================Update==========================================
 
-    def getUserInfosForUpdate(self, ID):
+    def getUserInfosForUpdate(self, ID: int):
 
         userID = ID
 
@@ -383,7 +387,8 @@ class Body(MDBoxLayout):
             "updateAdressTuteur"
         ]
 
-        if (userID==""):
+        if (userID=="" or userID.isnumeric()==False):
+            self.ids.idToUpdate.text = ''
             self.cancelUpdate()
         else:
             userID = backend.DataBase.getEmployeeByID(ID)
