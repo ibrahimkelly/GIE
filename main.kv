@@ -89,6 +89,55 @@
                         on_release: root.cancelEnregistrement()
 
         MDScreen:
+            name: "employees"
+            MDBoxLayout:
+                orientation: "vertical"
+                MDToolbar:
+                    title: "La liste des employées"
+                    InputInToolbar:
+                        id: searchId
+                        text: "Filtre"
+                        hint_text: "Entrer un nom..."
+                        font_size: self.height-19
+                        on_text: root.showEmployeesList(self.text)
+                        markup: True
+                UpdateGrid:
+                    ScrollView:
+                        do_scroll_x: False
+                        do_scroll_y: True
+                        adaptive_height: True
+                        MDBoxLayout:
+                            id: employees_list
+                            orientation: "vertical"
+                            adaptive_height: True
+                MDBoxLayout:
+                    orientation: "horizontal"
+                    size_hint: (1, 0.1)
+                    spacing: '10dp'
+                    MDIconButton:
+                        id: prv
+                        icon: "arrow-left"
+                        on_press: root.preview()
+                        md_bg_color: app.theme_cls.primary_color
+
+                    MDBoxLayout:
+                        orientation: 'horizontal'
+                        ScrollView:
+                            do_scroll_x: True
+                            do_scroll_y: False
+                            adaptive_width: True
+                            MDBoxLayout:
+                                id: page_range
+                                orientation: "horizontal"
+                                adaptive_width: True
+
+                    MDIconButton:
+                        id: svt
+                        icon: "arrow-right"
+                        on_press: root.next()
+                        md_bg_color: app.theme_cls.primary_color
+
+        MDScreen:
             name: "paiement"
             MDBoxLayout:
                 orientation: "vertical"
@@ -187,55 +236,6 @@
                         id: paiementDetteInfos
                     InfosLabel:
                         id: paiementCaisseInfos
-                    
-        MDScreen:
-            name: "employees"
-            MDBoxLayout:
-                orientation: "vertical"
-                MDToolbar:
-                    title: "La liste des employées"
-                    InputInToolbar:
-                        id: searchId
-                        text: "Filtre"
-                        hint_text: "Entrer un nom..."
-                        font_size: self.height-19
-                        on_text: root.showEmployeesList(self.text)
-                        markup: True
-                UpdateGrid:
-                    ScrollView:
-                        do_scroll_x: False
-                        do_scroll_y: True
-                        adaptive_height: True
-                        MDBoxLayout:
-                            id: employees_list
-                            orientation: "vertical"
-                            adaptive_height: True
-                MDBoxLayout:
-                    orientation: "horizontal"
-                    size_hint: (1, 0.1)
-                    spacing: '10dp'
-                    MDIconButton:
-                        id: prv
-                        icon: "arrow-left"
-                        on_press: root.preview()
-                        md_bg_color: app.theme_cls.primary_color
-
-                    MDBoxLayout:
-                        orientation: 'horizontal'
-                        ScrollView:
-                            do_scroll_x: True
-                            do_scroll_y: False
-                            adaptive_width: True
-                            MDBoxLayout:
-                                id: page_range
-                                orientation: "horizontal"
-                                adaptive_width: True
-
-                    MDIconButton:
-                        id: svt
-                        icon: "arrow-right"
-                        on_press: root.next()
-                        md_bg_color: app.theme_cls.primary_color
 
         MDScreen:
             name: "dette"
