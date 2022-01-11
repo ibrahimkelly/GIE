@@ -1,14 +1,14 @@
 import time
-
-from kivymd.app import MDApp
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivy.animation import Animation
-from kivymd.uix.button import MDRoundFlatButton
-from kivymd.uix.picker import MDDatePicker
+import backend
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty
+from kivy.animation import Animation
+from kivymd.app import MDApp
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.picker import MDDatePicker
+from kivymd.uix.datatables import MDDataTable
 
-import backend
+backend = backend.DataBase()
 
 class Body(MDBoxLayout):
 
@@ -21,6 +21,7 @@ class Body(MDBoxLayout):
     nom = ObjectProperty(None)
 
     montantDette = ObjectProperty(None)
+    montantPaiement = ObjectProperty(None)
 
     MONTH = [
         "janvier", "fevrier", "mars", "avril",
@@ -97,212 +98,116 @@ class Body(MDBoxLayout):
 #================================Employees==========================================
 
     def showEmployeesList(self, filtre: str):
-        self.ids["employees_list"].clear_widgets()
         to_find = filtre.capitalize()
-        employees = []
-        self.start, self.end = (0, 4)
-        if (to_find==""):
-            pass
-        else:
-            employees = backend.DataBase.laListe(to_find)
-        if (employees==[]):
-            pass
-        else:
-            to_display = employees[self.start:self.end]
-            self.limit = len(employees)
-            content = list(range(len(employees)))
-            for i in range(len(to_display)):
-                userDateIn = self.getUserDateIn(to_display[i][0])
-                content[i] = Icontent()
-                content[i].ids["identifiant"].text = f"{to_display[i][0]}"
-                content[i].ids["icontent_user"].text = f"[b]{to_display[i][1]} {to_display[i][2]} {to_display[i][3]}[/b]"
-                content[i].ids["icontent_salaire"].text = f"[b]{userDateIn[1][2]} F CFA[/b]"
-                content[i].ids["icontent_user_date"].text = f"[i]{userDateIn[1][0]}[/i]"
-                content[i].ids["icontent_tuteur"].text = f"[b]{userDateIn[2][0]} {userDateIn[2][1]}[/b]"
-                content[i].ids["icontent_tuteur_contact"].text = f"[b]{userDateIn[2][2]}[/b]"
-                content[i].ids["icontent_tuteur_adress"].text = f"[i]{userDateIn[2][3]}[/i]"
-                self.ids["employees_list"].add_widget(
-                    content[i]
-                )
-                try:
-                    ID = employees[i][0]
-                    userDay = userDateIn[1][0].split("-")[0]
-                    localtime = time.localtime()
-                    today = localtime[2]
-                    mois = Body.MONTH[localtime[1]-1]
-                    mois_precedent = Body.MONTH[localtime[1]-2]
-                    annee = localtime[0]
-                    thisMonth = backend.DataBase.isPaied(ID, mois, annee)
-                    query_of_pre_month = backend.DataBase.isPaied(ID, mois_precedent, annee)
-                    if (userDay=="" or userDay=="00"):
-                        #Enter date not defined...
-                        content[i].ids["identifiant"].md_bg_color = (1, 0, 0, 1)
-                        content[i].ids["identifiant"].text_color = (1, 1, 1, 1)
-                    elif thisMonth==[]:
-                        #Aucun paiement n'est effectue pour l'année actuelle...
-                        content[i].ids["identifiant"].md_bg_color = (1, 1, 1, 1)
-                        content[i].ids["identifiant"].text_color = (0, 0, 0, 1)
-                    elif thisMonth[0][0]!=0:
-                        #Le paiement est effectué pour le mois...
-                        pass
-                    elif (int(userDay)>=today and thisMonth[0][0]==0):
-                        if (query_of_pre_month[0][0]!=0):
-                            content[i].ids["identifiant"].md_bg_color = (1, 1, 0, 1)
-                            content[i].ids["identifiant"].text_color = (0, 0, 0, 1)
-                        elif (query_of_pre_month[0][0]==0):
-                            content[i].ids["identifiant"].md_bg_color = (1, 1, 1, 1)
-                            content[i].ids["identifiant"].text_color = (0, 0, 0, 1)
-                        else:
-                            pass
-                    elif (int(userDay)<today and thisMonth[0][0]==0):
-                        if (query_of_pre_month[0][0]!=0):
-                            content[i].ids["identifiant"].md_bg_color = (1, 1, 0, 1)
-                            content[i].ids["identifiant"].text_color = (0, 0, 0, 1)
-                        elif (query_of_pre_month[0][0]==0):
-                            content[i].ids["identifiant"].md_bg_color = (1, 1, 1, 1)
-                            content[i].ids["identifiant"].text_color = (0, 0, 0, 1)
-                        else:
-                            pass
-                    else:
-                        print("Autre cas non specifier...")
-                except (IndexError, ValueError):
-                    pass
-            self.ids['page_range'].clear_widgets()
 
-            for i in range(round(self.limit / 4)):
-
-                self.ids['page_range'].add_widget(
-                    MDRoundFlatButton(
-                        text=str(i + 1),
-                        on_press=lambda x: print(i)
-                    )
-                )
 
     def getUserDateIn(self, ID):
         userID = backend.DataBase.getEmployeeByID(ID)
         return userID
-    
-    def next(self):
-        try:
-            if (Body.end >= self.limit):
-                self.ids["svt"].stat = "Disabled"
-            else:
-                self.start = self.end
-                self.end += 4
-                self.showEmployeesList(self.ids.searchId.text)
-        except AttributeError:
-            pass
-
-    def preview(self):
-        if self.end <= 4:
-            self.ids["prv"].end = "Disabled"
-        else:
-            self.end -= 4
-            self.start -= 4
-            self.showEmployeesList(self.ids.searchId.text)
 
     # ================================Paiement==========================================
 
-        def getUserInfosForPaiement(self, ID):
-            userID = ID
-            to_be_used = list()  # Used to keep the different month value for a while
-            if (userID == ""):
+    def getUserInfosForPaiement(self, ID):
+        userID = ID
+        to_be_used = list()  # Used to keep the different month value for a while
+        if (userID == "" or userID.isnumeric()==False):
+            self.ids["pUserName"].text = ""
+            self.ids.idForPaiement.text = ''
+            self.hideButton()
+            self.clearPaiement()
+        else:
+            userID = backend.DataBase.getEmployeeByID(ID)
+            if (userID != []):
+                self.ids["pUserName"].text = f"[b]{userID[0][0]} {userID[0][1]} {userID[0][2]}[/b]"
+                if (len(str(self.ids["year"].text)) == 4):
+                    ID = self.ids["idForPaiement"].text
+                    year = self.ids["year"].text
+                    self.table = backend.DataBase.getPaiementValue(ID, year)
+                    if (self.table == []):
+                        self.clearPaiement()
+                        self.ids["addYear"].text = "[b]Ajouter[/b]"
+                        self.ids["addYear"].size_hint = (0.5, 0.8)
+                        self.ids["addYear"].bind(
+                            on_press=lambda x: self.insertIntoMois(ID, year)
+                        )
+                    else:
+                        for i in range(len(self.table[0])):  # Code slow for about 2.20 seconds
+                            self.ids[self.MONTH[i]].text = str(self.table[0][i])
+                else:
+                    self.hideButton()
+                    for i in range(len(self.MONTH)):
+                        self.ids[self.MONTH[i]].text = ""
+            else:
                 self.ids["pUserName"].text = ""
                 self.hideButton()
-                self.clearPaiement()
-            else:
-                userID = backend.DataBase.getEmployeeByID(ID)
-                if (userID != []):
-                    self.ids["pUserName"].text = f"[b]{userID[0][0]} {userID[0][1]} {userID[0][2]}[/b]"
-                    if (len(str(self.ids["year"].text)) == 4):
-                        ID = self.ids["idForPaiement"].text
-                        year = self.ids["year"].text
-                        self.table = backend.DataBase.getPaiementValue(ID, year)
-                        if (self.table == []):
-                            self.clearPaiement()
-                            self.ids["addYear"].text = "[b]Ajouter[/b]"
-                            self.ids["addYear"].size_hint = (0.5, 0.8)
-                            self.ids["addYear"].bind(
-                                on_press=lambda x: self.insertIntoMois(ID, year)
-                            )
-                        else:
-                            for i in range(len(self.table[0])):  # Code slow for about 2.20 seconds
-                                self.ids[Body.MONTH[i]].text = str(self.table[0][i])
-                    else:
-                        self.hideButton()
-                        for i in range(len(Body.MONTH)):
-                            self.ids[Body.MONTH[i]].text = ""
-                else:
-                    self.ids["pUserName"].text = ""
-                    self.hideButton()
 
-        def updatePaiement(self, ID, year, mois, salaire):
-            backend.DataBase.updatePaiement(ID, year, mois, salaire)
+    def updatePaiement(self, ID, year, mois, salaire):
+        backend.DataBase.updatePaiement(ID, year, mois, salaire)
 
-        def hideButton(self):
-            self.ids["addYear"].text = ""
-            self.ids["addYear"].bind(
-                on_press=lambda x: None
-            )
+    def hideButton(self):
+        self.ids["addYear"].text = ""
+        self.ids["addYear"].bind(
+            on_press=lambda x: None
+        )
 
-        def insertIntoMois(self, ID, year):
-            checking = backend.DataBase.checkYear(ID, year)
-            if checking:
-                pass
-            else:
-                backend.DataBase.insertIntoMois(ID, year)
-                self.hideButton()
+    def insertIntoMois(self, ID, year):
+        checking = backend.DataBase.checkYear(ID, year)
+        if checking:
+            pass
+        else:
+            backend.DataBase.insertIntoMois(ID, year)
+            self.hideButton()
 
-        def updateSomme(self, ID):
-            try:
-                userID = ID
-                if (userID == ""):
-                    pass
-                else:
-                    backend.DataBase.updateSomme(userID)
-                    infos = self.getSommeUpdate(userID)
-                    dette = self.getSommeDette(userID)
-                    # To avoid soustraction with None error...
-                    infos = 0 if infos[0][0] is None else infos[0][
-                        0]  # print("Infos is different to none and numbers...")
-                    # To avoid soustraction with None error...
-                    if (dette[0][0] == "" or dette[0][0] == None):
-                        dette = 0
-                    else:
-                        dette = dette[0][0]  # print("Dette is different to none and numbers...")
-                    # To avoid soustraction with str error...
-                    # dette = 0 if dette[0][0] is '' else dette[0][0]
-                    self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{infos} F[/color][/b]"
-                    self.ids[
-                        "paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{dette} F[/color][/b]"
-                    self.ids[
-                        "paiementCaisseInfos"].text = f"[b]Total restant : [color=#ffff00]{infos - dette} F[/color][/b]"
-
-                    if (len(str(self.ids["year"].text)) != 4):
-                        self.ids["paiementInfos"].text = ""
-                        self.ids["paiementInfos"].text = ""
-                        self.ids["paiementDetteInfos"].text = ""
-                        self.ids["paiementCaisseInfos"].text = ""
-            except (IndexError, TypeError):
-                # Pour les identifiants non dans la base de donnée,
-                # Empeche l'ecriture dans les cases textuelles
-                self.clearPaiement()
-
-        def clearPaiement(self):
-            for textInput in Body.MONTH:
-                self.ids[textInput].text = ""
-            self.ids["paiementInfos"].text = ""
-            self.ids["paiementDetteInfos"].text = ""
-            self.ids["paiementCaisseInfos"].text = ""
-
-        def getSommeUpdate(self, ID):
+    def updateSomme(self, ID):
+        try:
             userID = ID
-            result = str()
-            if (userID == ""):
+            if (userID == "" or userID.isnumeric()==False):
                 pass
             else:
-                result = backend.DataBase.getSommeUpdate(userID)
-            return result
+                backend.DataBase.updateSomme(userID)
+                infos = self.getSommeUpdate(userID)
+                dette = self.getSommeDette(userID)
+                # To avoid soustraction with None error...
+                infos = 0 if infos[0][0] is None else infos[0][
+                    0]  # print("Infos is different to none and numbers...")
+                # To avoid soustraction with None error...
+                if (dette[0][0] == "" or dette[0][0] == None):
+                    dette = 0
+                else:
+                    dette = dette[0][0]  # print("Dette is different to none and numbers...")
+                # To avoid soustraction with str error...
+                # dette = 0 if dette[0][0] is '' else dette[0][0]
+                self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{infos} F[/color][/b]"
+                self.ids[
+                    "paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{dette} F[/color][/b]"
+                self.ids[
+                    "paiementCaisseInfos"].text = f"[b]Total restant : [color=#ffff00]{infos - dette} F[/color][/b]"
+
+                if (len(str(self.ids["year"].text)) != 4):
+                    self.ids["paiementInfos"].text = ""
+                    self.ids["paiementInfos"].text = ""
+                    self.ids["paiementDetteInfos"].text = ""
+                    self.ids["paiementCaisseInfos"].text = ""
+        except (IndexError, TypeError):
+            # Pour les identifiants non dans la base de donnée,
+            # Empeche l'ecriture dans les cases textuelles
+            self.clearPaiement()
+
+    def clearPaiement(self):
+        for textInput in Body.MONTH:
+            self.ids[textInput].text = ""
+        self.ids["paiementInfos"].text = ""
+        self.ids["paiementDetteInfos"].text = ""
+        self.ids["paiementCaisseInfos"].text = ""
+
+    def getSommeUpdate(self, ID):
+        userID = ID
+        result = str()
+        if (userID == ""):
+            pass
+        else:
+            result = backend.DataBase.getSommeUpdate(userID)
+        return result
 
 #================================Dette==========================================
 
@@ -325,6 +230,8 @@ class Body(MDBoxLayout):
         if (userID==""):
             self.ids["detteInfos"].text = "[color=#ffff00]Aucun(e) employée trouvée...[/color]"
             Clock.schedule_once(self.hideDetteInfos, 3)
+        elif (userID.isnumeric()==False):
+            self.clearDette()
         else:
             userInfos = backend.DataBase.getEmployeeByID(userID)
             if (userID=="" or userInfos==[]):
@@ -348,7 +255,7 @@ class Body(MDBoxLayout):
 
     def updateSommeDette(self, ID):
         userID = ID
-        if (userID==""):
+        if (userID=="" or userID.isnumeric()==False):
             pass
         else:
             backend.DataBase.updateSommeDette(userID)
@@ -372,7 +279,7 @@ class Body(MDBoxLayout):
 
 #================================Update==========================================
 
-    def getUserInfosForUpdate(self, ID):
+    def getUserInfosForUpdate(self, ID: int):
 
         userID = ID
 
@@ -383,7 +290,8 @@ class Body(MDBoxLayout):
             "updateAdressTuteur"
         ]
 
-        if (userID==""):
+        if (userID=="" or userID.isnumeric()==False):
+            self.ids.idToUpdate.text = ''
             self.cancelUpdate()
         else:
             userID = backend.DataBase.getEmployeeByID(ID)
