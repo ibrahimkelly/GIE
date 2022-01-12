@@ -34,6 +34,22 @@ class Body(MDBoxLayout):
 
     def __init__(self, **kwargs):
         super(Body, self).__init__(**kwargs)
+        self.data_tables = MDDataTable(
+            use_pagination=True,
+            column_data=[
+                ("ID", dp(19)),
+                ("PRENOM", dp(24)),
+                ("SURNOM", dp(24)),
+                ("NOM", dp(24)),
+                ("SALAIRE", dp(24)),
+                ("DATE DEBUT", dp(24)),
+                ("PRENOM TUTEUR", dp(24)),
+                ("NOM TUTEUR", dp(24)),
+                ("QUARTIER", dp(24)),
+                ("TELEPHONE", dp(24)),
+            ],
+            elevation=19
+        )
 
     def check_enreg_error(self):
 
@@ -103,24 +119,15 @@ class Body(MDBoxLayout):
     def showEmployeesList(self, filtre: str):
         nom = filtre.capitalize()
         employees_list = backend.getEmployeesByNom(nom)
-        print(employees_list)
-        data_tables = MDDataTable(
-            use_pagination=True,
-            column_data=[
-                ("ID", dp(19)),
-                ("PRENOM", dp(24)),
-                ("SURNOM", dp(24)),
-                ("NOM", dp(24)),
-                ("SALAIRE", dp(24)),
-                ("DATE DEBUT", dp(24)),
-                ("PRENOM TUTEUR", dp(24)),
-                ("NOM TUTEUR", dp(24)),
-                ("QUARTIER", dp(24)),
-                ("TELEPHONE", dp(24)),
-            ],
-            row_data=employees_list
-        )
-        self.dataTableContainer.add_widget(data_tables)
+        self.dataTableContainer.clear_widgets()
+        self.data_tables.row_data = employees_list
+        self.data_tables.bind(on_row_press=self.on_row_press)
+        self.dataTableContainer.add_widget(self.data_tables)
+
+    def on_row_press(self, instance_table, instance_row):
+        '''Called when a table row is clicked.'''
+
+        print(instance_table, instance_row)
 
     # ================================Paiement==========================================
 
