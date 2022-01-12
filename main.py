@@ -1,4 +1,7 @@
 import time
+
+from kivy.metrics import dp
+
 import backend
 from kivy.clock import Clock
 from kivy.properties import ObjectProperty
@@ -22,7 +25,7 @@ class Body(MDBoxLayout):
 
     montantDette = ObjectProperty(None)
     montantPaiement = ObjectProperty(None)
-
+    dataTableContainer = ObjectProperty(None)
     MONTH = [
         "janvier", "fevrier", "mars", "avril",
         "mai", "juin", "juillet", "aout",
@@ -101,10 +104,23 @@ class Body(MDBoxLayout):
         nom = filtre.capitalize()
         employees_list = backend.getEmployeesByNom(nom)
         print(employees_list)
-
-    def getUserDateIn(self, ID):
-        userID = backend.DataBase.getEmployeeByID(ID)
-        return userID
+        data_tables = MDDataTable(
+            use_pagination=True,
+            column_data=[
+                ("ID", dp(19)),
+                ("PRENOM", dp(24)),
+                ("SURNOM", dp(24)),
+                ("NOM", dp(24)),
+                ("SALAIRE", dp(24)),
+                ("DATE DEBUT", dp(24)),
+                ("PRENOM TUTEUR", dp(24)),
+                ("NOM TUTEUR", dp(24)),
+                ("QUARTIER", dp(24)),
+                ("TELEPHONE", dp(24)),
+            ],
+            row_data=employees_list
+        )
+        self.dataTableContainer.add_widget(data_tables)
 
     # ================================Paiement==========================================
 

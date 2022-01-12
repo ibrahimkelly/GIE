@@ -89,10 +89,16 @@ class DataBase:
         return result
 
     def getEmployeesByNom(self, nom: str) -> list:
-        query = """SELECT * FROM employees WHERE nom=?"""
-        self.curseur.execute(query, (nom,))
-        result = self.curseur.fetchall()
-        return result
+        if (nom=='Tous' or nom=='tous'):
+            query = """SELECT id, prenom, surnom, nom, salaire, date_debut, prenom_tuteur, nom_tuteur, adresse_tuteur, telephone_tuteur FROM employees"""
+            self.curseur.execute(query)
+            result = self.curseur.fetchall()
+            return result
+        else:
+            query = """SELECT id, prenom, surnom, nom, salaire, date_debut, prenom_tuteur, nom_tuteur, adresse_tuteur, telephone_tuteur FROM employees WHERE nom=?"""
+            self.curseur.execute(query, (nom,))
+            result = self.curseur.fetchall()
+            return result
 
 if __name__ == "__main__":
     backend = DataBase()
