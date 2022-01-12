@@ -100,5 +100,11 @@ class DataBase:
             result = self.curseur.fetchall()
             return result
 
+    def getPaiementYear(self, id: int, annee: int) -> list:
+        query = """SELECT * FROM paiements WHERE id_employee=? AND annee=?"""
+        self.curseur.execute(query, (id, annee))
+        result = self.curseur.fetchall()
+        return result
+
 if __name__ == "__main__":
     backend = DataBase()

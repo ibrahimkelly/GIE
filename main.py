@@ -133,20 +133,20 @@ class Body(MDBoxLayout):
 
     def getUserInfosForPaiement(self, ID):
         userID = ID
-        to_be_used = list()  # Used to keep the different month value for a while
         if (userID == "" or userID.isnumeric()==False):
             self.ids["pUserName"].text = ""
             self.ids.idForPaiement.text = ''
             self.hideButton()
             self.clearPaiement()
         else:
-            userID = backend.DataBase.getEmployeeByID(ID)
+            userID = backend.getEmployeeById(ID)[0]
             if (userID != []):
-                self.ids["pUserName"].text = f"[b]{userID[0][0]} {userID[0][1]} {userID[0][2]}[/b]"
+                print(userID)
+                self.ids["pUserName"].text = f"[b]{userID[1]} {userID[2]} {userID[3]}[/b]"
                 if (len(str(self.ids["year"].text)) == 4):
                     ID = self.ids["idForPaiement"].text
                     year = self.ids["year"].text
-                    self.table = backend.DataBase.getPaiementValue(ID, year)
+                    self.table = backend.getPaiementYear(ID, year)
                     if (self.table == []):
                         self.clearPaiement()
                         self.ids["addYear"].text = "[b]Ajouter[/b]"
