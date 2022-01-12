@@ -21,47 +21,56 @@ class DataBase:
             nom BLOB(19) NULL,
             date_entrer DATETIME,
             date_debut DATETIME,
-            salaire INTEGER,
-            id_dette INTEGER,
-            total_dette INTEGER,
-            epargne INTEGER,
-            prenom_tuteur BLOB(19),
-            nom_tuteur BLOB(19),
-            telephone_tuteur INTEGER,
-            adresse_tuteur BLOB(19)
+            salaire INTEGER DEFAULT 0,
+            total_dette INTEGER DEFAULT 0,
+            epargne INTEGER DEFAULT 0,
+            prenom_tuteur BLOB(19) DEFAULT NULL,
+            nom_tuteur BLOB(19) DEFAULT NULL,
+            telephone_tuteur INTEGER NULL,
+            adresse_tuteur BLOB(19) DEFAULT NULL
         );
 
         CREATE TABLE IF NOT EXISTS paiements
         (
             id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
             id_employee INTEGER,
-            ANNEE INTEGER NULL,
-            JANVIER INTEGER NULL DEFAULT 0,
-            FEVRIER INTEGER NULL DEFAULT 0,
-            MARS INTEGER NULL DEFAULT 0,
-            AVRIL INTEGER NULL DEFAULT 0,
-            MAI INTEGER NULL DEFAULT 0,
-            JUIN INTEGER NULL DEFAULT 0,
-            JUILLET INTEGER NULL DEFAULT 0,
-            AOUT INTEGER NULL DEFAULT 0,
-            SEPTEMBRE INTEGER NULL DEFAULT 0,
-            OCTOBRE INTEGER NULL DEFAULT 0,
-            NOVEMBRE INTEGER NULL DEFAULT 0,
-            DECEMBRE INTEGER NULL DEFAULT 0,
+            annee INTEGER NULL,
+            janvier INTEGER NULL DEFAULT 0,
+            fevrier INTEGER NULL DEFAULT 0,
+            mars INTEGER NULL DEFAULT 0,
+            avril INTEGER NULL DEFAULT 0,
+            mai INTEGER NULL DEFAULT 0,
+            juin INTEGER NULL DEFAULT 0,
+            juillet INTEGER NULL DEFAULT 0,
+            aout INTEGER NULL DEFAULT 0,
+            septembre INTEGER NULL DEFAULT 0,
+            octobre INTEGER NULL DEFAULT 0,
+            novembre INTEGER NULL DEFAULT 0,
+            decembre INTEGER NULL DEFAULT 0,
+            total INTEGER NULL DEFAULT 0,
             FOREIGN KEY(id_employee) REFERENCES employees(id)
         );
 
-        CREATE TABLE IF NOT EXISTS DETTE
+        CREATE TABLE IF NOT EXISTS dettes
         (
             id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
             id_employee INTEGER,
-            MONTANT INTEGER DEFAULT 0
+            date_credit DATETIME,
+            montant INTEGER DEFAULT 0,
+            FOREIGN KEY(id_employee) REFERENCES employees(id)
         );
         """
 
         self.curseur.executescript(database_tables)
         self.connection.commit()
-        print("Great...")
+
+    def saveEmployee(self, prenom, surnom, nom):
+        query = """INSERT INTO employees('prenom', 'surnom', 'nom') VALUES(?, ?, ?)"""
+        self.curseur.execute(query, (prenom, surnom, nom))
+        self.connection.commit()
+
+    def checEmployeeExistence(self, prenom, surnom, nom):
+        print(prenom, surnom, nom)
 
 if __name__ == "__main__":
     backend = DataBase()

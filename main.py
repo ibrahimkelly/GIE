@@ -62,11 +62,11 @@ class Body(MDBoxLayout):
         self.check_enreg_error()
 
         if (self.prenom.error==False and self.surnom.error==False and self.nom.error==False):
-            if (backend.DataBase.isSaved(prenomValue, surnomValue, nomValue)==True):
+            if (backend.checEmployeeExistence(prenomValue, surnomValue, nomValue)==True):
                 self.ids["enreg_infos"].text = "[color=#ffff00]Ce nom existe déjà dans la base de donnée...[/color]"
                 Clock.schedule_once(self.hideInfo, 3)
             else:
-                backend.DataBase.inscription(prenomValue, surnomValue, nomValue)
+                backend.saveEmployee(prenomValue, surnomValue, nomValue)
                 self.clearEnregInput()
                 self.ids["enreg_infos"].text = "[color=#00ff00]Enregistrement réussi...[/color]"
                 Clock.schedule_once(self.hideInfo, 3)
