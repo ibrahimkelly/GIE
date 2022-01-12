@@ -77,5 +77,22 @@ class DataBase:
         else:
             return False
 
+    def updateEmployee(self):
+        query = """"""
+        self.curseur.execute()
+        self.connection.commit()
+
+    def getEmployeeById(self, id: int) -> list:
+        query = """SELECT * FROM employees WHERE id=?"""
+        self.curseur.execute(query, (id,))
+        result = self.curseur.fetchall()
+        return result
+
+    def getEmployeesByNom(self, nom: str) -> list:
+        query = """SELECT * FROM employees WHERE nom=?"""
+        self.curseur.execute(query, (nom,))
+        result = self.curseur.fetchall()
+        return result
+
 if __name__ == "__main__":
     backend = DataBase()

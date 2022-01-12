@@ -98,8 +98,9 @@ class Body(MDBoxLayout):
 #================================Employees==========================================
 
     def showEmployeesList(self, filtre: str):
-        to_find = filtre.capitalize()
-
+        nom = filtre.capitalize()
+        employees_list = backend.getEmployeesByNom(nom)
+        print(employees_list)
 
     def getUserDateIn(self, ID):
         userID = backend.DataBase.getEmployeeByID(ID)
