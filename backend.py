@@ -64,13 +64,18 @@ class DataBase:
         self.curseur.executescript(database_tables)
         self.connection.commit()
 
-    def saveEmployee(self, prenom, surnom, nom):
+    def saveEmployee(self, prenom: str, surnom: str, nom: str) -> None:
         query = """INSERT INTO employees('prenom', 'surnom', 'nom') VALUES(?, ?, ?)"""
         self.curseur.execute(query, (prenom, surnom, nom))
         self.connection.commit()
 
-    def checEmployeeExistence(self, prenom, surnom, nom):
-        print(prenom, surnom, nom)
+    def checEmployeeExistence(self, prenom: str, surnom: str, nom: str) -> bool:
+        query = """SELECT * FROM employees WHERE prenom=? AND surnom=? AND nom=?"""
+        self.curseur.execute(query, (prenom, surnom, nom))
+        if (self.curseur.fetchall()):
+            return True
+        else:
+            return False
 
 if __name__ == "__main__":
     backend = DataBase()
