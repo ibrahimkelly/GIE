@@ -125,20 +125,24 @@ class DataBase:
             self.curseur.execute(query)
             self.connection.commit()
 
-    def updateTotal(self, id: int):
+    def updateTotal(self, id: int, year: int):
         query = f"""UPDATE paiements
             SET total =
             (
-                SELECT SUM(total)
+                SELECT janvier+fevrier
                 FROM paiements
                 WHERE id_employee = {id}
             )
-            WHERE id_employee = {id}
+            WHERE id_employee = {id} AND annee = {year}
         """
         self.curseur.execute(query)
         self.connection.commit()
+        print('Update total...')
 
-    def getUpdateTotal(self) -> int:
+    def getUpdateTotal(self, id: int) -> int:
+        return 200
+
+    def getTotalDette(self, id: int) -> int:
         return 200
 
 if __name__ == "__main__":

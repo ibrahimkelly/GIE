@@ -26,6 +26,9 @@ class Body(MDBoxLayout):
     montantDette = ObjectProperty(None)
     montantPaiement = ObjectProperty(None)
     dataTableContainer = ObjectProperty(None)
+
+    paiementYear = ObjectProperty(None)
+
     MONTH = [
         "janvier", "fevrier", "mars", "avril",
         "mai", "juin", "juillet", "aout",
@@ -131,27 +134,25 @@ class Body(MDBoxLayout):
 
     # ================================Paiement==========================================
 
-    def getUserInfosForPaiement(self, ID):
-        userID = ID
-        if (userID == "" or userID.isnumeric()==False):
+    def getUserInfosForPaiement(self, id: int):
+        if (id == "" or id.isnumeric()==False):
             self.ids["pUserName"].text = ""
             self.ids.idForPaiement.text = ''
             self.hideButton()
             self.clearPaiement()
         else:
-            userID = backend.getEmployeeById(ID)[0]
-            if (userID != []):
-                print(userID)
-                self.ids["pUserName"].text = f"[b]{userID[1]} {userID[2]} {userID[3]}[/b]"
-                if (len(str(self.ids["year"].text)) == 4):
-                    ID = self.ids["idForPaiement"].text
-                    year = self.ids["year"].text
-                    self.table = backend.getYearPaiement(ID, year)
+            foundUser = backend.getEmployeeById(id)[0]
+            if (foundUser != []):
+                print(foundUser)
+                self.ids["pUserName"].text = f"[b]{foundUser[1]} {foundUser[2]} {foundUser[3]}[/b]"
+                if (len(str(self.paiementYear.text)) == 4):
+                    id = self.ids["idForPaiement"].text
+                    self.table = backend.getYearPaiement(id, self.paiementYear.text)
                     if (self.table == []):
                         self.clearPaiement()
                         self.ids["addYear"].text = "[b]Ajouter[/b]"
                         self.ids["addYear"].bind(
-                            on_press=lambda x: self.addNewYear(ID, year)
+                            on_press=lambda x: self.addNewYear(id)
                         )
                     else:
                         for i in range(len(self.table[0])-4): # Code slow for about 2.20 seconds
@@ -173,47 +174,39 @@ class Body(MDBoxLayout):
             on_press=lambda x: None
         )
 
-    def addNewYear(self, id: int, year: int):
-        check_year_existence = backend.checkAnneeExistence(id, year)
+    def addNewYear(self, id: int):
+        check_year_existence = backend.checkAnneeExistence(id, self.paiementYear.text)
         if (check_year_existence):
             pass
         else:
-            backend.insertPaiement(id, year)
+            backend.insertPaiement(id, self.paiementYear.text)
             self.hideButton()
 
     def updateSomme(self, id: int):
-        try:
-            if (id == "" or id.isnumeric()==False):
-                pass
+        if (id == "" or id.isnumeric()==False):
+            pass
+        else:
+            backend.updateTotal(id, self.paiementYear.text)
+            infos = self.getUpdateTotal(id)
+            print('Infos : ', infos)
+            dette = self.getSommeDette(id)
+            print('dette : ', dette)
+            # To avoid soustraction with None error...
+            infos = 0 if infos is None else infos # print("Infos is different to none and numbers...")
+            # To avoid soustraction with None error...
+            if (dette == [] or dette == None):
+                dette = 0
             else:
-                backend.updateTotal(id)
-                infos = self.getUpdateTotal(id)
-                dette = self.getSommeDette(id)
-                # To avoid soustraction with None error...
-                infos = 0 if infos[0][0] is None else infos[0][0] # print("Infos is different to none and numbers...")
-                # To avoid soustraction with None error...
-                if (dette[0][0] == "" or dette[0][0] == None):
-                    dette = 0
-                else:
-                    dette = dette[0][0]  # print("Dette is different to none and numbers...")
-                # To avoid soustraction with str error...
-                # dette = 0 if dette[0][0] is '' else dette[0][0]
-                self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{infos} F[/color][/b]"
-                self.ids[
-                    "paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{dette} F[/color][/b]"
-                self.ids[
-                    "paiementCaisseInfos"].text = f"[b]Total restant : [color=#ffff00]{infos - dette} F[/color][/b]"
+                dette = dette
+            self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{infos} F[/color][/b]"
+            self.ids["paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{dette} F[/color][/b]"
+            self.ids["paiementCaisseInfos"].text = f"[b]Total restant : [color=#ffff00]{infos - dette} F[/color][/b]"
 
-                if (len(str(self.ids["year"].text)) != 4):
-                    self.ids["paiementInfos"].text = ""
-                    self.ids["paiementInfos"].text = ""
-                    self.ids["paiementDetteInfos"].text = ""
-                    self.ids["paiementCaisseInfos"].text = ""
-        except (IndexError, TypeError):
-            # Pour les identifiants non dans la base de donnée,
-            # Empeche l'ecriture dans les cases textuelles
-            # self.clearPaiement()
-            print('IndexError, TypeError')
+            if (len(str(self.paiementYear.text)) != 4):
+                self.ids["paiementInfos"].text = ""
+                self.ids["paiementInfos"].text = ""
+                self.ids["paiementDetteInfos"].text = ""
+                self.ids["paiementCaisseInfos"].text = ""
 
     def clearPaiement(self):
         for textInput in Body.MONTH:
@@ -288,7 +281,7 @@ class Body(MDBoxLayout):
         if (userID==""):
             pass
         else:
-            result = backend.DataBase.getSommeDette(userID)
+            result = backend.getTotalDette(userID)
         return result
 
     def clearDette(self):
