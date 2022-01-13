@@ -100,11 +100,52 @@ class DataBase:
             result = self.curseur.fetchall()
             return result
 
+    def insertPaiement(self, id: int, annee: int):
+        checking_query = """SELECT * FROM paiements WHERE id=? AND annee=?"""
+        self.curseur.execute(checking_query, (id, annee))
+        result = self.curseur.fetchall()
+        if (result):
+            print('Year aleady exists... : ', result)
+        else:
+            self.curseur.execute(f"INSERT INTO paiements('id_employee', 'annee') VALUES({id}, {annee})")
+            self.connection.commit()
+            print('Inserted...')
+
+    def checkAnneeExistence(self, id: int, annee) -> list:
+        checking_query = """SELECT * FROM paiements WHERE id=? AND annee=?"""
+        self.curseur.execute(checking_query, (id, annee))
+        result = self.curseur.fetchall()
+        return result
+
     def getPaiementYear(self, id: int, annee: int) -> list:
         query = """SELECT * FROM paiements WHERE id_employee=? AND annee=?"""
         self.curseur.execute(query, (id, annee))
         result = self.curseur.fetchall()
         return result
+
+    def updatePaiement(self, id: int, year: int, mois: str, salaire: int) -> None:
+        if (id == "" or len(str(year)) != 4) or str(salaire) == "":
+            pass
+        else:
+            query = f"""UPDATE paiements SET {mois}={salaire} WHERE id_employee={id} AND annee={year}"""
+            self.curseur.execute(query)
+            self.connection.commit()
+
+    def updateTotal(self, id: int):
+        query = f"""UPDATE paiements
+            SET total =
+            (
+                SELECT SUM(total)
+                FROM paiements
+                WHERE id_employee = {id}
+            )
+            WHERE id_employee = {id}
+        """
+        self.curseur.execute(query)
+        self.connection.commit()
+
+    def getUpdateTotal(self) -> int:
+        return 200
 
 if __name__ == "__main__":
     backend = DataBase()

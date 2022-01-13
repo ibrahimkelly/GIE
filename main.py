@@ -147,16 +147,17 @@ class Body(MDBoxLayout):
                     ID = self.ids["idForPaiement"].text
                     year = self.ids["year"].text
                     self.table = backend.getPaiementYear(ID, year)
+                    print('Table : ', self.table)
                     if (self.table == []):
                         self.clearPaiement()
                         self.ids["addYear"].text = "[b]Ajouter[/b]"
-                        self.ids["addYear"].size_hint = (0.5, 0.8)
                         self.ids["addYear"].bind(
                             on_press=lambda x: self.insertIntoMois(ID, year)
                         )
                     else:
-                        for i in range(len(self.table[0])):  # Code slow for about 2.20 seconds
-                            self.ids[self.MONTH[i]].text = str(self.table[0][i])
+                        print(len(self.table[0]))
+                        #for i in range(len(self.table[0])):  # Code slow for about 2.20 seconds
+                            #self.ids[self.MONTH[i]].text = str(self.table[0][i])
                 else:
                     self.hideButton()
                     for i in range(len(self.MONTH)):
@@ -165,8 +166,8 @@ class Body(MDBoxLayout):
                 self.ids["pUserName"].text = ""
                 self.hideButton()
 
-    def updatePaiement(self, ID, year, mois, salaire):
-        backend.DataBase.updatePaiement(ID, year, mois, salaire)
+    def updatePaiement(self, id: int, year: int, mois: str, salaire: int) -> None:
+        backend.updatePaiement(id, year, mois, salaire)
 
     def hideButton(self):
         self.ids["addYear"].text = ""
@@ -175,12 +176,8 @@ class Body(MDBoxLayout):
         )
 
     def insertIntoMois(self, ID, year):
-        checking = backend.DataBase.checkYear(ID, year)
-        if checking:
-            pass
-        else:
-            backend.DataBase.insertIntoMois(ID, year)
-            self.hideButton()
+        backend.insertPaiement(ID, year)
+        self.hideButton()
 
     def updateSomme(self, ID):
         try:
@@ -188,12 +185,11 @@ class Body(MDBoxLayout):
             if (userID == "" or userID.isnumeric()==False):
                 pass
             else:
-                backend.DataBase.updateSomme(userID)
-                infos = self.getSommeUpdate(userID)
+                backend.updateTotal(userID)
+                infos = self.getUpdateTotal(userID)
                 dette = self.getSommeDette(userID)
                 # To avoid soustraction with None error...
-                infos = 0 if infos[0][0] is None else infos[0][
-                    0]  # print("Infos is different to none and numbers...")
+                infos = 0 if infos[0][0] is None else infos[0][0]  # print("Infos is different to none and numbers...")
                 # To avoid soustraction with None error...
                 if (dette[0][0] == "" or dette[0][0] == None):
                     dette = 0
@@ -224,13 +220,13 @@ class Body(MDBoxLayout):
         self.ids["paiementDetteInfos"].text = ""
         self.ids["paiementCaisseInfos"].text = ""
 
-    def getSommeUpdate(self, ID):
-        userID = ID
+    def getUpdateTotal(self, id):
+        userID = id
         result = str()
         if (userID == ""):
             pass
         else:
-            result = backend.DataBase.getSommeUpdate(userID)
+            result = backend.getUpdateTotal(userID)
         return result
 
 #================================Dette==========================================
