@@ -101,15 +101,9 @@ class DataBase:
             return result
 
     def insertPaiement(self, id: int, annee: int):
-        checking_query = """SELECT * FROM paiements WHERE id=? AND annee=?"""
-        self.curseur.execute(checking_query, (id, annee))
-        result = self.curseur.fetchall()
-        if (result):
-            print('Year aleady exists... : ', result)
-        else:
-            self.curseur.execute(f"INSERT INTO paiements('id_employee', 'annee') VALUES({id}, {annee})")
-            self.connection.commit()
-            print('Inserted...')
+        self.curseur.execute(f"INSERT INTO paiements('id_employee', 'annee') VALUES({id}, {annee})")
+        self.connection.commit()
+        print('Inserted...')
 
     def checkAnneeExistence(self, id: int, annee) -> list:
         checking_query = """SELECT * FROM paiements WHERE id=? AND annee=?"""
@@ -117,7 +111,7 @@ class DataBase:
         result = self.curseur.fetchall()
         return result
 
-    def getPaiementYear(self, id: int, annee: int) -> list:
+    def getYearPaiement(self, id: int, annee: int) -> list:
         query = """SELECT * FROM paiements WHERE id_employee=? AND annee=?"""
         self.curseur.execute(query, (id, annee))
         result = self.curseur.fetchall()
