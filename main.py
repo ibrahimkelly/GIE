@@ -1,3 +1,4 @@
+import datetime
 import time
 
 from kivy.metrics import dp
@@ -180,7 +181,6 @@ class Body(MDBoxLayout):
 
     def hideButton(self):
         self.pToolbar.remove_widget(self.addYearButton)
-        print('Remove...')
 
     def addNewYear(self, id: int):
         check_year_existence = backend.checkAnneeExistence(id, self.paiementYear.text)
@@ -195,20 +195,13 @@ class Body(MDBoxLayout):
             pass
         else:
             backend.updateTotal(id, self.paiementYear.text)
-            infos = self.getUpdateTotal(id)
-            print('Infos : ', infos)
-            dette = self.getSommeDette(id)
-            print('dette : ', dette)
-            # To avoid soustraction with None error...
-            infos = 0 if infos is None else infos # print("Infos is different to none and numbers...")
-            # To avoid soustraction with None error...
-            if (dette == [] or dette == None):
-                dette = 0
-            else:
-                dette = dette
-            self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{infos} F[/color][/b]"
-            self.ids["paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{dette} F[/color][/b]"
-            self.ids["paiementCaisseInfos"].text = f"[b]Total restant : [color=#ffff00]{infos - dette} F[/color][/b]"
+            total_paiement = self.getUpdateTotal(id, self.paiementYear.text)
+            total_dette = self.getSommeDette(id)
+            total_paiement = 0 if total_paiement is None else total_paiement
+            total_dette = 0 if total_dette is None else total_dette
+            self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{total_paiement} F[/color][/b]"
+            self.ids["paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{total_dette} F[/color][/b]"
+            self.ids["paiementCaisseInfos"].text = f"[b]Total : [color=#ffff00]{total_paiement} F[/color][/b]"
 
             if (len(str(self.paiementYear.text)) != 4):
                 self.ids["paiementInfos"].text = ""
@@ -223,51 +216,48 @@ class Body(MDBoxLayout):
         self.ids["paiementDetteInfos"].text = ""
         self.ids["paiementCaisseInfos"].text = ""
 
-    def getUpdateTotal(self, id):
-        userID = id
+    def getUpdateTotal(self, id, annee: int):
         result = str()
-        if (userID == ""):
+        if (id == "" or annee.isnumeric()==False):
             pass
         else:
-            result = backend.getUpdateTotal(userID)
+            result = backend.getUpdateTotal(id, annee)
         return result
 
 #================================Dette==========================================
 
-    def getUserInfosForDette(self, ID: int):
-        userID = ID
-        if (userID=="" or userID.isnumeric()==False):
+    def getUserInfosForDette(self, id: int):
+        if (id=="" or id.isnumeric()==False):
             self.clearDette()
         else:
-            userID = backend.DataBase.getEmployeeByID(ID)
-            if (userID!=[]):
-                self.ids["dUserName"].text = f"[b]{userID[0][0]} {userID[0][1]} {userID[0][2]}[/b]"
+            foundUser = backend.getEmployeeById(id)
+            if (foundUser!=[]):
+                self.ids["dUserName"].text = f"[b]{foundUser[0][1]} {foundUser[0][2]} {foundUser[0][3]}[/b]"
             else:
                 self.ids["dUserName"].text = ""
                 self.ids["detteMontant"].text = ""
 
-    def setDette(self, ID):
-        userID = self.ids["idForDette"].text
+    def setDette(self, id: int):
         montant = self.montantDette.text
-        userInfos = str()
-        if (userID==""):
+        if (id=="" or id.isnumeric()==False):
             self.ids["detteInfos"].text = "[color=#ffff00]Aucun(e) employée trouvée...[/color]"
             Clock.schedule_once(self.hideDetteInfos, 3)
-        elif (userID.isnumeric()==False):
+        elif (id.isnumeric()==False):
             self.clearDette()
         else:
-            userInfos = backend.DataBase.getEmployeeByID(userID)
-            if (userID=="" or userInfos==[]):
+            foundUser = backend.getEmployeeById(id)
+            if (foundUser=="" or foundUser==[]):
                 self.ids["detteInfos"].text = "[color=#ffff00]Aucun(e) employée trouvée...[/color]"
                 Clock.schedule_once(self.hideDetteInfos, 3)
-            elif (userID!="" and montant.isnumeric() and userInfos!=[]):
+            elif (id!="" and montant.isnumeric() and foundUser!=[]):
 
                 if (int(montant)<1000 or int(montant)>=1000000):
                     self.ids["detteInfos"].text = "[color=#ffff00]Montant n'est pas dans la fourchette...[/color]"
                     Clock.schedule_once(self.hideDetteInfos, 3)
                 else:
-                    backend.DataBase.setDette(userID, montant)
-                    self.updateSommeDette(userID)
+                    date = datetime.datetime.now()
+                    backend.insertDette(id, date, montant)
+                    self.updateSommeDette(id)
                     self.clearDette()
                     self.ids["detteInfos"].text = "[color=#00ff00]Dette accorder avec succès...[/color]"
                     Clock.schedule_once(self.hideDetteInfos, 3)
@@ -283,13 +273,12 @@ class Body(MDBoxLayout):
         else:
             backend.DataBase.updateSommeDette(userID)
     
-    def getSommeDette(self, ID):
-        userID = ID
+    def getSommeDette(self, id: int):
         result = ""
-        if (userID==""):
+        if (id=="" or id.isnumeric()==False):
             pass
         else:
-            result = backend.getTotalDette(userID)
+            result = backend.getTotalDette(id)
         return result
 
     def clearDette(self):

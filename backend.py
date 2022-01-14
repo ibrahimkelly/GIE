@@ -7,6 +7,8 @@ Created on Tue Dec 01 08:00:00 2020
 """
 
 import sqlite3
+from typing import List, Any
+
 
 class DataBase:
     def __init__(self):
@@ -103,7 +105,11 @@ class DataBase:
     def insertPaiement(self, id: int, annee: int):
         self.curseur.execute(f"INSERT INTO paiements('id_employee', 'annee') VALUES({id}, {annee})")
         self.connection.commit()
-        print('Inserted...')
+
+    def insertDette(self, id: int, date: str, montant: int):
+        query = """INSERT INTO dettes('id_employee', 'date_credit', 'montant') VALUES(?, ?, ?)"""
+        self.curseur.execute(query, (id, date, montant))
+        self.connection.commit()
 
     def checkAnneeExistence(self, id: int, annee) -> list:
         checking_query = """SELECT * FROM paiements WHERE id=? AND annee=?"""
@@ -111,6 +117,7 @@ class DataBase:
         result = self.curseur.fetchall()
         return result
 
+    # To be review about redondance
     def getYearPaiement(self, id: int, annee: int) -> list:
         query = """SELECT * FROM paiements WHERE id_employee=? AND annee=?"""
         self.curseur.execute(query, (id, annee))
@@ -129,7 +136,7 @@ class DataBase:
         query = f"""UPDATE paiements
             SET total =
             (
-                SELECT janvier+fevrier
+                SELECT janvier+fevrier+mars+avril+mai+juin+juillet+aout+septembre+octobre+novembre+decembre
                 FROM paiements
                 WHERE id_employee = {id}
             )
@@ -137,13 +144,26 @@ class DataBase:
         """
         self.curseur.execute(query)
         self.connection.commit()
-        print('Update total...')
 
-    def getUpdateTotal(self, id: int) -> int:
-        return 200
+    def getUpdateTotal(self, id: int, annee: int) -> int:
+        query = """SELECT total FROM paiements WHERE id=? AND annee=?"""
+        self.curseur.execute(query, (id, annee))
+        result = self.curseur.fetchall()
+        if (result):
+            result = result[0][0]
+        else:
+            result = 0
+        return result
 
     def getTotalDette(self, id: int) -> int:
-        return 200
+        query = """SELECT SUM(montant) FROM dettes WHERE id=?"""
+        self.curseur.execute(query, (id,))
+        result = self.curseur.fetchall()
+        if (result):
+            result = result[0][0]
+        else:
+            result = 0
+        return result
 
 if __name__ == "__main__":
     backend = DataBase()
