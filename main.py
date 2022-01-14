@@ -1,6 +1,7 @@
 import time
 
 from kivy.metrics import dp
+from kivymd.uix.button import MDFillRoundFlatIconButton, MDIconButton, MDRectangleFlatIconButton
 
 import backend
 from kivy.clock import Clock
@@ -28,6 +29,7 @@ class Body(MDBoxLayout):
     dataTableContainer = ObjectProperty(None)
 
     paiementYear = ObjectProperty(None)
+    pToolbar = ObjectProperty(None)
 
     MONTH = [
         "janvier", "fevrier", "mars", "avril",
@@ -37,6 +39,7 @@ class Body(MDBoxLayout):
 
     def __init__(self, **kwargs):
         super(Body, self).__init__(**kwargs)
+
         self.data_tables = MDDataTable(
             use_pagination=True,
             column_data=[
@@ -135,44 +138,49 @@ class Body(MDBoxLayout):
     # ================================Paiement==========================================
 
     def getUserInfosForPaiement(self, id: int):
-        if (id == "" or id.isnumeric()==False):
-            self.ids["pUserName"].text = ""
-            self.ids.idForPaiement.text = ''
-            self.hideButton()
-            self.clearPaiement()
-        else:
-            foundUser = backend.getEmployeeById(id)[0]
-            if (foundUser != []):
-                print(foundUser)
-                self.ids["pUserName"].text = f"[b]{foundUser[1]} {foundUser[2]} {foundUser[3]}[/b]"
-                if (len(str(self.paiementYear.text)) == 4):
-                    id = self.ids["idForPaiement"].text
-                    self.table = backend.getYearPaiement(id, self.paiementYear.text)
-                    if (self.table == []):
-                        self.clearPaiement()
-                        self.ids["addYear"].text = "[b]Ajouter[/b]"
-                        self.ids["addYear"].bind(
-                            on_press=lambda x: self.addNewYear(id)
-                        )
-                    else:
-                        for i in range(len(self.table[0])-4): # Code slow for about 2.20 seconds
-                            self.ids[self.MONTH[i]].text = str(self.table[0][i+3])
-                else:
-                    self.hideButton()
-                    for i in range(len(self.MONTH)):
-                        self.ids[self.MONTH[i]].text = ""
-            else:
+
+        try: # if id not found in the database, the foundUser = backend.getEmployeeById(id)[0] will raise an IndexError
+            if (id == "" or id.isnumeric()==False):
                 self.ids["pUserName"].text = ""
+                self.ids.idForPaiement.text = ''
                 self.hideButton()
+                self.clearPaiement()
+            else:
+                foundUser = backend.getEmployeeById(id)[0]
+                if (foundUser != []):
+                    print(foundUser)
+                    self.ids["pUserName"].text = f"[b]{foundUser[1]} {foundUser[2]} {foundUser[3]}[/b]"
+                    if (len(str(self.paiementYear.text)) == 4):
+                        id = self.ids["idForPaiement"].text
+                        self.table = backend.getYearPaiement(id, self.paiementYear.text)
+                        if (self.table == []):
+                            self.clearPaiement()
+                            self.addYearButton = MDFillRoundFlatIconButton(
+                                icon='plus',
+                                text='Ajouter',
+                                font_size=dp(24),
+                                on_press=lambda x: self.addNewYear(id)
+                            )
+                            self.pToolbar.add_widget(self.addYearButton)
+                        else:
+                            for i in range(len(self.table[0])-4): # Code slow for about 2.20 seconds
+                                self.ids[self.MONTH[i]].text = str(self.table[0][i+3])
+                    else:
+                        self.hideButton()
+                        for i in range(len(self.MONTH)):
+                            self.ids[self.MONTH[i]].text = ""
+                else:
+                    self.ids["pUserName"].text = ""
+                    self.hideButton()
+        except(IndexError):
+            self.ids["pUserName"].text = f"[color=#ff0][b]Aucun employé (e) trouvée avec l'id : {id}[/b][/color]"
 
     def updatePaiement(self, id: int, year: int, mois: str, salaire: int) -> None:
         backend.updatePaiement(id, year, mois, salaire)
 
     def hideButton(self):
-        self.ids["addYear"].text = ""
-        self.ids["addYear"].bind(
-            on_press=lambda x: None
-        )
+        self.pToolbar.remove_widget(self.addYearButton)
+        print('Remove...')
 
     def addNewYear(self, id: int):
         check_year_existence = backend.checkAnneeExistence(id, self.paiementYear.text)

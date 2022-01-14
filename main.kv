@@ -10,6 +10,9 @@
     montantDette: detteMontant
     dataTableContainer: dataTableContainer
     paiementYear: paiementYear
+    addYearButton: addYearButton.__self__
+    pToolbar: pToolbar
+
     MDToolbar:
         id: title
         title: "Groupement d'Interet Economique (GIE) Djiguiya".upper()
@@ -123,15 +126,16 @@
                         hint_text: "Annee..."
                         theme_text_color: "Primary"
                         on_text: root.getUserInfosForPaiement(idForPaiement.text)
-                    MenuButton:
-                        id: addYear
-                        text: str()
+                    MDFillRoundFlatIconButton:
+                        id: addYearButton
+                        icon: 'plus'
+                        text: 'Ajouter'
                         font_size: "24dp"
                 MDBoxLayout:
                     orientation: "horizontal"
                     InfosLabel:
                         id: pUserName
-                        font_style: "H4"
+                        font_style: "H5"
                         theme_text_color: "Primary"
                         #text_color: app.theme_cls.primary_color
 
