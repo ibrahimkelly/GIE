@@ -271,8 +271,11 @@
                         hint_text: "Prénom"
                         max_text_length: 13
                     UpdateInput:
-                        id: UpdateDateSortir
-                        hint_text: "Date de sortir"
+                        id: updateDateDebut
+                        hint_text: "Date de debut"
+                        icon_right: 'calendar'
+                        icon_right_color: app.theme_cls.primary_color
+                        on_focus: root.shooseStartDate()
                 UpdateGrid:
                     UpdateInput:
                         id: updateSurnom
@@ -293,11 +296,11 @@
                         max_text_length: 13
                 UpdateGrid:
                     UpdateInput:
-                        id: updateSalaire
-                        hint_text: "Salaire"
-                        icon_right: 'currency-eur'
+                        id: updateDateEntrer
+                        hint_text: "Date d'entrer"
+                        icon_right: 'calendar'
                         icon_right_color: app.theme_cls.primary_color
-                        max_text_length: 6
+                        on_focus: root.shooseEnterDate()
                     UpdateInput:
                         id: updateTuteurContact
                         hint_text: "Contact du tuteur"
@@ -306,11 +309,11 @@
                         max_text_length: 13
                 UpdateGrid:
                     UpdateInput:
-                        id: updateDateEntrer
-                        hint_text: "Date d'entrer"
-                        icon_right: 'calendar'
+                        id: updateSalaire
+                        hint_text: "Salaire"
+                        icon_right: 'currency-eur'
                         icon_right_color: app.theme_cls.primary_color
-                        on_focus: root.show_date_picker()
+                        max_text_length: 6
                     UpdateInput:
                         id: updateAdressTuteur
                         hint_text: "Adresse du tuteur"

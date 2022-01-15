@@ -195,7 +195,6 @@ class Body(MDBoxLayout):
         else:
             backend.updateTotal(id, self.paiementYear.text)
             total_paiement = self.getUpdateTotal(id, self.paiementYear.text)
-            print('id : ', id, 'year : ', self.paiementYear.text, 'total : ', total_paiement)
             total_paiement = 0 if total_paiement is None else total_paiement
             self.ids["total_paiement"].text = f"[b]Total des paiements : [color=#ffff00]{total_paiement} F[/color][/b]"
 
@@ -282,36 +281,34 @@ class Body(MDBoxLayout):
 
 #================================Update==========================================
 
-    def getUserInfosForUpdate(self, ID: int):
-
-        userID = ID
+    def getUserInfosForUpdate(self, id: int):
 
         self.update_ids = [
             "updatePrenom", "updateSurnom", "updateNom",
-            "updateSalaire", "updateDateEntrer","UpdateDateSortir",
+            "updateSalaire", "updateDateEntrer", "updateDateDebut",
             "updatePrenomTuteur", "updateNomTutuer", "updateTuteurContact",
             "updateAdressTuteur"
         ]
 
-        if (userID=="" or userID.isnumeric()==False):
+        if (id=="" or id.isnumeric()==False):
             self.ids.idToUpdate.text = ''
             self.cancelUpdate()
         else:
-            foundUser = backend.DataBase.getEmployeeByID(ID)
+            foundUser = backend.getUserForUpdate(id)
             if (foundUser!=[]):
                 self.ids["updatePrenom"].text = str(foundUser[0][0])
                 self.ids["updateSurnom"].text = str(foundUser[0][1])
                 self.ids["updateNom"].text = str(foundUser[0][2])
 
-                self.ids["updateDateEntrer"].text = str(foundUser[1][0])
-                self.ids["UpdateDateSortir"].text = str(foundUser[1][1])
-                self.ids["updateSalaire"].text = str(foundUser[1][2])
+                self.ids["updateDateEntrer"].text = str(foundUser[0][3])
+                self.ids["updateSalaire"].text = str(foundUser[0][4])
+                self.ids["updateDateDebut"].text = str(foundUser[0][5])
 
-                self.ids["updatePrenomTuteur"].text = str(foundUser[2][0])
-                self.ids["updateNomTutuer"].text = str(foundUser[2][1])
-                self.ids["updateTuteurContact"].text = str(foundUser[2][2])
-                self.ids["updateAdressTuteur"].text = str(foundUser[2][3])
-                
+                self.ids["updatePrenomTuteur"].text = str(foundUser[0][6])
+                self.ids["updateNomTutuer"].text = str(foundUser[0][7])
+                self.ids["updateTuteurContact"].text = str(foundUser[0][8])
+                self.ids["updateAdressTuteur"].text = str(foundUser[0][9])
+
                 self.ids["updateInfos"].text = ""
             else:
                 self.ids["updateInfos"].theme_text_color = "Custom"
@@ -330,24 +327,31 @@ class Body(MDBoxLayout):
         except AttributeError:
             pass
     
-    def on_save(self, instance, value, date_range):
+    def setEnterDate(self, instance, value, date_range):
         self.ids.updateDateEntrer.text = str(value)
+
+    def setStartDate(self, instance, value, date_range):
+        self.ids.updateDateDebut.text = str(value)
 
     def on_cancel(self, instance, value):
         '''Events called when the "CANCEL" dialog box button is clicked.'''
 
-    def show_date_picker(self):
+    def shooseEnterDate(self):
         date_dialog = MDDatePicker() # max_date=datetime.datetime.now(); primary_color=app.theme_cls.primary_color
-        date_dialog.bind(on_save=self.on_save, on_cancel=self.on_cancel)
+        date_dialog.bind(on_save=self.setEnterDate, on_cancel=self.on_cancel)
+        date_dialog.open()
+
+    def shooseStartDate(self):
+        date_dialog = MDDatePicker() # max_date=datetime.datetime.now(); primary_color=app.theme_cls.primary_color
+        date_dialog.bind(on_save=self.setStartDate, on_cancel=self.on_cancel)
         date_dialog.open()
 
     def clearUpdateID(self):
         self.ids["idToUpdate"].text = ""
         self.cancelUpdate()
 
-    def setUpdate(self, ID):
-        userID = ID
-        if (userID==""):
+    def setUpdate(self, id: int):
+        if (id=="" or id.isnumeric()==False):
             self.ids["updateInfos"].text = "[color=#ffff00]Veuillez entrer un identifiant...[/color]"
             Clock.schedule_once(self.hideUpdateInfos, 3)
         else:
@@ -356,9 +360,9 @@ class Body(MDBoxLayout):
                 self.ids["updateSurnom"].text,
                 self.ids["updateNom"].text
             )
-            date_in, date_out, salaire = (
+            date_in, date_start, salaire = (
                 self.ids["updateDateEntrer"].text,
-                self.ids["UpdateDateSortir"].text,
+                self.ids["updateDateDebut"].text,
                 self.ids["updateSalaire"].text
             )
             t_prenom, t_nom, t_contact, t_adress = (
@@ -367,18 +371,18 @@ class Body(MDBoxLayout):
                 self.ids["updateTuteurContact"].text,
                 self.ids["updateAdressTuteur"].text
             )
-            backend.DataBase.setUpdate(
-                userID, prenom, surnom, nom,
-                date_in, date_out, salaire,
+            backend.updateEmployee(
+                id, prenom, surnom, nom,
+                date_in, date_start, salaire,
                 t_prenom, t_nom, t_contact, t_adress
             )
-            Clock.schedule_once(self.updateSuccess, 1.3)
+            Clock.schedule_once(self.updateSuccess, 0.8)
 
     def updateSuccess(self, event):
         self.cancelUpdate()
         self.ids["idToUpdate"].text = ""
         self.ids["updateInfos"].text = "[color=#00ff00]Mise en jour effectuée...[/color]"
-        Clock.schedule_once(self.hideUpdateInfos, 3)
+        Clock.schedule_once(self.hideUpdateInfos, 1.9)
 
 class Icontent(MDBoxLayout):
     pass

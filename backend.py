@@ -176,5 +176,33 @@ class DataBase:
         self.curseur.execute(query)
         self.connection.commit()
 
+    def getUserForUpdate(self, id: int) -> list[any]:
+        query = """
+            SELECT prenom, surnom, nom, date_entrer, salaire, date_debut,
+            prenom_tuteur, nom_tuteur, telephone_tuteur, adresse_tuteur
+            FROM employees
+            WHERE id = ?
+        """
+        self.curseur.execute(query, (id,))
+        result = self.curseur.fetchall()
+        return result
+
+    def updateEmployee(self, id, prenom, surnom, nom,
+                date_in, date_start, salaire,
+                t_prenom, t_nom, t_contact, t_adress):
+        query = f"""
+            UPDATE employees
+            SET prenom = ?, surnom = ?, nom = ?, date_entrer = ?, salaire = ?,
+            date_debut = ?, prenom_tuteur = ?, nom_tuteur = ?, telephone_tuteur = ?, adresse_tuteur = ?
+            WHERE id = {id}
+        """
+        self.curseur.execute(
+            query, (
+                prenom, surnom, nom, date_in, salaire,
+                date_start, t_prenom, t_nom, t_contact, t_adress
+            )
+        )
+        self.connection.commit()
+
 if __name__ == "__main__":
     backend = DataBase()
