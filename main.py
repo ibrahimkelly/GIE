@@ -48,12 +48,11 @@ class Body(MDBoxLayout):
                 ("PRENOM", dp(24)),
                 ("SURNOM", dp(24)),
                 ("NOM", dp(24)),
+                ("DATE_ENTRER", dp(24)),
                 ("SALAIRE", dp(24)),
-                ("DATE DEBUT", dp(24)),
-                ("PRENOM TUTEUR", dp(24)),
-                ("NOM TUTEUR", dp(24)),
-                ("QUARTIER", dp(24)),
-                ("TELEPHONE", dp(24)),
+                ("T_PAIEMENT", dp(24)),
+                ("T_DETTE", dp(24)),
+                ("EPARGNE", dp(24))
             ],
             elevation=19
         )
@@ -194,6 +193,8 @@ class Body(MDBoxLayout):
             pass
         else:
             backend.updateTotal(id, self.paiementYear.text)
+            backend.updateTotalPaiement(id)
+            backend.updateEpargne(id)
             total_paiement = self.getUpdateTotal(id, self.paiementYear.text)
             total_paiement = 0 if total_paiement is None else total_paiement
             self.ids["total_paiement"].text = f"[b]Total des paiements : [color=#ffff00]{total_paiement} F[/color][/b]"
@@ -213,6 +214,9 @@ class Body(MDBoxLayout):
         else:
             result = backend.getUpdateTotal(id, annee)
         return result
+
+    def updateEpargne(self, id: int) -> None:
+        backend.updateEpargne(id)
 
 #================================Dette==========================================
 
@@ -247,6 +251,7 @@ class Body(MDBoxLayout):
                 else:
                     date = datetime.datetime.now()
                     backend.insertDette(id, date, montant)
+                    self.updateEpargne(id)
                     self.updateSommeDette(id)
                     self.clearDette()
                     self.ids["detteInfos"].text = "[color=#00ff00]Dette accorder avec succès...[/color]"

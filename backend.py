@@ -25,6 +25,7 @@ class DataBase:
             date_debut DATETIME,
             salaire INTEGER DEFAULT 0,
             total_dette INTEGER DEFAULT 0,
+            total_paiement INTEGER DEFAULT 0,
             epargne INTEGER DEFAULT 0,
             prenom_tuteur BLOB(19) DEFAULT NULL,
             nom_tuteur BLOB(19) DEFAULT NULL,
@@ -92,12 +93,12 @@ class DataBase:
 
     def getEmployeesByNom(self, nom: str) -> list:
         if (nom=='Tous' or nom=='tous'):
-            query = """SELECT id, prenom, surnom, nom, salaire, date_debut, prenom_tuteur, nom_tuteur, adresse_tuteur, telephone_tuteur FROM employees"""
+            query = """SELECT id, prenom, surnom, nom, date_entrer, salaire, total_paiement, total_dette, epargne FROM employees"""
             self.curseur.execute(query)
             result = self.curseur.fetchall()
             return result
         else:
-            query = """SELECT id, prenom, surnom, nom, salaire, date_debut, prenom_tuteur, nom_tuteur, adresse_tuteur, telephone_tuteur FROM employees WHERE nom=?"""
+            query = """SELECT id, prenom, surnom, nom, date_entrer, salaire, total_paiement, total_dette, epargne FROM employees WHERE nom=?"""
             self.curseur.execute(query, (nom,))
             result = self.curseur.fetchall()
             return result
@@ -152,7 +153,6 @@ class DataBase:
             result = 0
         return result
 
-    # Must be removed, because total_dette already existe in employee table
     def getTotalDette(self, id: int) -> int:
         query = """SELECT total_dette FROM employees WHERE id=?"""
         self.curseur.execute(query, (id,))
@@ -202,6 +202,30 @@ class DataBase:
                 date_start, t_prenom, t_nom, t_contact, t_adress
             )
         )
+        self.connection.commit()
+
+    def updateTotalPaiement(self, id: int) -> None:
+        query = f"""
+                UPDATE employees
+                SET total_paiement =
+                (
+                    SELECT SUM(total)
+                    FROM paiements
+                    WHERE id = {id}
+                )
+                WHERE id = {id}
+                """
+        self.curseur.execute(query)
+        self.connection.commit()
+
+    def updateEpargne(self, id: int) -> None:
+        query = f"""
+        UPDATE employees
+        SET epargne = (total_paiement - total_dette)
+        WHERE id = {id}
+        """
+        print("Epargne update")
+        self.curseur.execute(query)
         self.connection.commit()
 
 if __name__ == "__main__":
