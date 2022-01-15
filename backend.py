@@ -133,20 +133,17 @@ class DataBase:
             self.connection.commit()
 
     def updateTotal(self, id: int, year: int):
-        query = f"""UPDATE paiements
-            SET total =
-            (
-                SELECT janvier+fevrier+mars+avril+mai+juin+juillet+aout+septembre+octobre+novembre+decembre
-                FROM paiements
-                WHERE id_employee = {id}
-            )
-            WHERE id_employee = {id} AND annee = {year}
+        query = """
+            UPDATE paiements
+            SET total = janvier+fevrier+mars+avril+mai+juin+juillet+aout+septembre+octobre+novembre+decembre
+            WHERE id_employee = ?
+            AND annee = ?
         """
-        self.curseur.execute(query)
+        self.curseur.execute(query, (id, year))
         self.connection.commit()
 
     def getUpdateTotal(self, id: int, annee: int) -> int:
-        query = """SELECT total FROM paiements WHERE id=? AND annee=?"""
+        query = """SELECT total FROM paiements WHERE id_employee=? AND annee=?"""
         self.curseur.execute(query, (id, annee))
         result = self.curseur.fetchall()
         if (result):
@@ -155,8 +152,9 @@ class DataBase:
             result = 0
         return result
 
+    # Must be removed, because total_dette already existe in employee table
     def getTotalDette(self, id: int) -> int:
-        query = """SELECT SUM(montant) FROM dettes WHERE id=?"""
+        query = """SELECT total_dette FROM employees WHERE id=?"""
         self.curseur.execute(query, (id,))
         result = self.curseur.fetchall()
         if (result):
@@ -164,6 +162,19 @@ class DataBase:
         else:
             result = 0
         return result
+
+    def updateTotalDette(self, id: int) -> None:
+        query = f"""UPDATE employees
+            SET total_dette =
+            (
+                SELECT SUM(montant)
+                FROM dettes
+                WHERE id_employee = {id}
+            )
+            WHERE id = {id}
+        """
+        self.curseur.execute(query)
+        self.connection.commit()
 
 if __name__ == "__main__":
     backend = DataBase()

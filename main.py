@@ -149,7 +149,6 @@ class Body(MDBoxLayout):
             else:
                 foundUser = backend.getEmployeeById(id)[0]
                 if (foundUser != []):
-                    print(foundUser)
                     self.ids["pUserName"].text = f"[b]{foundUser[1]} {foundUser[2]} {foundUser[3]}[/b]"
                     if (len(str(self.paiementYear.text)) == 4):
                         id = self.ids["idForPaiement"].text
@@ -196,25 +195,17 @@ class Body(MDBoxLayout):
         else:
             backend.updateTotal(id, self.paiementYear.text)
             total_paiement = self.getUpdateTotal(id, self.paiementYear.text)
-            total_dette = self.getSommeDette(id)
+            print('id : ', id, 'year : ', self.paiementYear.text, 'total : ', total_paiement)
             total_paiement = 0 if total_paiement is None else total_paiement
-            total_dette = 0 if total_dette is None else total_dette
-            self.ids["paiementInfos"].text = f"[b]Total des paiements : [color=#ffff00]{total_paiement} F[/color][/b]"
-            self.ids["paiementDetteInfos"].text = f"[b]Total de dettes accordées : [color=#ffff00]{total_dette} F[/color][/b]"
-            self.ids["paiementCaisseInfos"].text = f"[b]Total : [color=#ffff00]{total_paiement} F[/color][/b]"
+            self.ids["total_paiement"].text = f"[b]Total des paiements : [color=#ffff00]{total_paiement} F[/color][/b]"
 
             if (len(str(self.paiementYear.text)) != 4):
-                self.ids["paiementInfos"].text = ""
-                self.ids["paiementInfos"].text = ""
-                self.ids["paiementDetteInfos"].text = ""
-                self.ids["paiementCaisseInfos"].text = ""
+                self.ids["total_paiement"].text = ""
 
     def clearPaiement(self):
         for textInput in Body.MONTH:
             self.ids[textInput].text = ""
-        self.ids["paiementInfos"].text = ""
-        self.ids["paiementDetteInfos"].text = ""
-        self.ids["paiementCaisseInfos"].text = ""
+        self.ids["total_paiement"].text = ""
 
     def getUpdateTotal(self, id, annee: int):
         result = str()
@@ -271,7 +262,7 @@ class Body(MDBoxLayout):
         if (userID=="" or userID.isnumeric()==False):
             pass
         else:
-            backend.DataBase.updateSommeDette(userID)
+            backend.updateTotalDette(userID)
     
     def getSommeDette(self, id: int):
         result = ""
@@ -306,20 +297,20 @@ class Body(MDBoxLayout):
             self.ids.idToUpdate.text = ''
             self.cancelUpdate()
         else:
-            userID = backend.DataBase.getEmployeeByID(ID)
-            if (userID!=[]):
-                self.ids["updatePrenom"].text = str(userID[0][0])
-                self.ids["updateSurnom"].text = str(userID[0][1])
-                self.ids["updateNom"].text = str(userID[0][2])
+            foundUser = backend.DataBase.getEmployeeByID(ID)
+            if (foundUser!=[]):
+                self.ids["updatePrenom"].text = str(foundUser[0][0])
+                self.ids["updateSurnom"].text = str(foundUser[0][1])
+                self.ids["updateNom"].text = str(foundUser[0][2])
 
-                self.ids["updateDateEntrer"].text = str(userID[1][0])
-                self.ids["UpdateDateSortir"].text = str(userID[1][1])
-                self.ids["updateSalaire"].text = str(userID[1][2])
+                self.ids["updateDateEntrer"].text = str(foundUser[1][0])
+                self.ids["UpdateDateSortir"].text = str(foundUser[1][1])
+                self.ids["updateSalaire"].text = str(foundUser[1][2])
 
-                self.ids["updatePrenomTuteur"].text = str(userID[2][0])
-                self.ids["updateNomTutuer"].text = str(userID[2][1])
-                self.ids["updateTuteurContact"].text = str(userID[2][2])
-                self.ids["updateAdressTuteur"].text = str(userID[2][3])
+                self.ids["updatePrenomTuteur"].text = str(foundUser[2][0])
+                self.ids["updateNomTutuer"].text = str(foundUser[2][1])
+                self.ids["updateTuteurContact"].text = str(foundUser[2][2])
+                self.ids["updateAdressTuteur"].text = str(foundUser[2][3])
                 
                 self.ids["updateInfos"].text = ""
             else:
