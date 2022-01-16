@@ -55,7 +55,6 @@
                 EnregInput:
                     id: enreg_firstName_input
                     hint_text: "Prénom"
-                    required: True
                     on_text: root.check_enreg_error()
                 EnregInput:
                     id: enreg_surname_input
@@ -64,7 +63,6 @@
                 EnregInput:
                     id: enreg_lastName_input
                     hint_text: "Nom"
-                    required: True
                     on_text: root.check_enreg_error()
                 InfosLabel:
                     id: enreg_lastName_infos
@@ -227,7 +225,6 @@
                     UpdateInput:
                         id: detteMontant
                         hint_text: "Montant"
-                        required: True
                         max_text_length: 6
                         icon_right: 'currency-usd'
                         icon_right_color: app.theme_cls.primary_color
