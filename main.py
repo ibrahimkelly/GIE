@@ -48,10 +48,10 @@ class Body(MDBoxLayout):
                 ("PRENOM", dp(24)),
                 ("SURNOM", dp(24)),
                 ("NOM", dp(24)),
-                ("DATE_ENTRER", dp(24)),
+                ("ENTRER", dp(24)),
                 ("SALAIRE", dp(24)),
-                ("T_PAIEMENT", dp(24)),
-                ("T_DETTE", dp(24)),
+                ("PAIEMENTS", dp(24)),
+                ("DETTES", dp(24)),
                 ("EPARGNE", dp(24))
             ],
             elevation=19
