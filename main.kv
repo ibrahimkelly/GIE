@@ -8,6 +8,11 @@
     surnom: enreg_surname_input
     nom: enreg_lastName_input
     montantDette: detteMontant
+    dataTableContainer: dataTableContainer
+    paiementYear: paiementYear
+    addYearButton: addYearButton.__self__
+    pToolbar: pToolbar
+
     MDToolbar:
         id: title
         title: "Groupement d'Interet Economique (GIE) Djiguiya".upper()
@@ -26,7 +31,7 @@
             on_press: root.hideTitle()
             on_press: sm.current = "paiement"
             on_press: idForPaiement.text = ""
-            on_press: year.text = ""
+            on_press: paiementYear.text = ""
         HeaderButton:
             text: "[b]DETTE[/b]"
             on_press: root.showTitle()
@@ -50,7 +55,6 @@
                 EnregInput:
                     id: enreg_firstName_input
                     hint_text: "Prénom"
-                    required: True
                     on_text: root.check_enreg_error()
                 EnregInput:
                     id: enreg_surname_input
@@ -59,7 +63,6 @@
                 EnregInput:
                     id: enreg_lastName_input
                     hint_text: "Nom"
-                    required: True
                     on_text: root.check_enreg_error()
                 InfosLabel:
                     id: enreg_lastName_infos
@@ -98,44 +101,12 @@
                         id: searchId
                         text: "Filtre"
                         hint_text: "Entrer un nom..."
-                        font_size: self.height-19
+                        font_size: '38dp'
                         on_text: root.showEmployeesList(self.text)
                         markup: True
-                UpdateGrid:
-                    ScrollView:
-                        do_scroll_x: False
-                        do_scroll_y: True
-                        adaptive_height: True
-                        MDBoxLayout:
-                            id: employees_list
-                            orientation: "vertical"
-                            adaptive_height: True
                 MDBoxLayout:
-                    orientation: "horizontal"
-                    size_hint: (1, 0.1)
-                    spacing: '10dp'
-                    MDIconButton:
-                        id: prv
-                        icon: "arrow-left"
-                        on_press: root.preview()
-                        md_bg_color: app.theme_cls.primary_color
-
-                    MDBoxLayout:
-                        orientation: 'horizontal'
-                        ScrollView:
-                            do_scroll_x: True
-                            do_scroll_y: False
-                            adaptive_width: True
-                            MDBoxLayout:
-                                id: page_range
-                                orientation: "horizontal"
-                                adaptive_width: True
-
-                    MDIconButton:
-                        id: svt
-                        icon: "arrow-right"
-                        on_press: root.next()
-                        md_bg_color: app.theme_cls.primary_color
+                    orientation: 'vertical'
+                    id: dataTableContainer
 
         MDScreen:
             name: "paiement"
@@ -149,19 +120,20 @@
                         hint_text: "Identifiant..."
                         on_text: root.getUserInfosForPaiement(self.text)
                     InputInToolbar:
-                        id: year
+                        id: paiementYear
                         hint_text: "Annee..."
                         theme_text_color: "Primary"
                         on_text: root.getUserInfosForPaiement(idForPaiement.text)
-                    MenuButton:
-                        id: addYear
-                        text: str()
+                    MDFillRoundFlatIconButton:
+                        id: addYearButton
+                        icon: 'plus'
+                        text: 'Ajouter'
                         font_size: "24dp"
                 MDBoxLayout:
                     orientation: "horizontal"
                     InfosLabel:
                         id: pUserName
-                        font_style: "H4"
+                        font_style: "H5"
                         theme_text_color: "Primary"
                         #text_color: app.theme_cls.primary_color
 
@@ -169,74 +141,69 @@
                     PaiementInput:
                         id: janvier
                         hint_text: "Janvier"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "JANVIER", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "janvier", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: fevrier
                         hint_text: "Février"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "FEVRIER", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "fevrier", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: mars
                         hint_text: "Mars"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "MARS", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "mars", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: avril
                         hint_text: "Avril"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "AVRIL", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "avril", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                 PaiementRowMonth:
                     PaiementInput:
                         id: mai
                         hint_text: "Mai"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "MAI", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "mai", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: juin
                         hint_text: "Juin"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "JUIN", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "juin", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: juillet
                         hint_text: "Juillet"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "JUILLET", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "juillet", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: aout
                         hint_text: "Aout"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "AOUT", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "aout", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                 PaiementRowMonth:
                     PaiementInput:
                         id: septembre
                         hint_text: "Septembre"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "SEPTEMBRE", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "septembre", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: octobre
                         hint_text: "Octobre"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "OCTOBRE", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "octobre", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: novembre
                         hint_text: "Novembre"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "NOVEMBRE", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "novembre", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                     PaiementInput:
                         id: decembre
                         hint_text: "Décembre"
-                        on_text: root.updatePaiement(idForPaiement.text, year.text, "DECEMBRE", self.text)
+                        on_text: root.updatePaiement(idForPaiement.text, paiementYear.text, "decembre", self.text)
                         on_text: root.updateSomme(idForPaiement.text)
                 MDBoxLayout:
                     orientation: "horizontal"
                     InfosLabel:
-                        id: paiementInfos
-                    InfosLabel:
-                        id: paiementDetteInfos
-                    InfosLabel:
-                        id: paiementCaisseInfos
-
+                        id: total_paiement
         MDScreen:
             name: "dette"
             MDBoxLayout:
@@ -258,7 +225,6 @@
                     UpdateInput:
                         id: detteMontant
                         hint_text: "Montant"
-                        required: True
                         max_text_length: 6
                         icon_right: 'currency-usd'
                         icon_right_color: app.theme_cls.primary_color
@@ -302,8 +268,11 @@
                         hint_text: "Prénom"
                         max_text_length: 13
                     UpdateInput:
-                        id: UpdateDateSortir
-                        hint_text: "Date de sortir"
+                        id: updateDateDebut
+                        hint_text: "Date de debut"
+                        icon_right: 'calendar'
+                        icon_right_color: app.theme_cls.primary_color
+                        on_focus: root.shooseStartDate()
                 UpdateGrid:
                     UpdateInput:
                         id: updateSurnom
@@ -324,11 +293,11 @@
                         max_text_length: 13
                 UpdateGrid:
                     UpdateInput:
-                        id: updateSalaire
-                        hint_text: "Salaire"
-                        icon_right: 'currency-eur'
+                        id: updateDateEntrer
+                        hint_text: "Date d'entrer"
+                        icon_right: 'calendar'
                         icon_right_color: app.theme_cls.primary_color
-                        max_text_length: 6
+                        on_focus: root.shooseEnterDate()
                     UpdateInput:
                         id: updateTuteurContact
                         hint_text: "Contact du tuteur"
@@ -337,11 +306,11 @@
                         max_text_length: 13
                 UpdateGrid:
                     UpdateInput:
-                        id: updateDateEntrer
-                        hint_text: "Date d'entrer"
-                        icon_right: 'calendar'
+                        id: updateSalaire
+                        hint_text: "Salaire"
+                        icon_right: 'currency-eur'
                         icon_right_color: app.theme_cls.primary_color
-                        on_focus: root.show_date_picker()
+                        max_text_length: 6
                     UpdateInput:
                         id: updateAdressTuteur
                         hint_text: "Adresse du tuteur"

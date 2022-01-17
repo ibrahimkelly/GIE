@@ -7,296 +7,226 @@ Created on Tue Dec 01 08:00:00 2020
 """
 
 import sqlite3
+from typing import List, Any
+
 
 class DataBase:
-    global connection
-    global curseur
+    def __init__(self):
+        self.connection = sqlite3.connect("BaseDeDonnee.db")
+        self.curseur = self.connection.cursor()
 
-    connection = sqlite3.connect("BaseDeDonnee.db")
-    curseur = connection.cursor()
-    
-    employee_table = """CREATE TABLE IF NOT EXISTS EMPLOYEE
-    (
-        ID_EMPLOYEE INTEGER PRIMARY KEY AUTOINCREMENT,
-        PRENOM VARCHAR(57) NULL,
-        SURNOM VARCHAR(57) NULL,
-        NOM VARCHAR(57) NULL
-    )"""
+        database_tables = """CREATE TABLE IF NOT EXISTS employees
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
+            prenom BLOB(19) NULL,
+            surnom BLOB(19) NULL,
+            nom BLOB(19) NULL,
+            date_entrer DATETIME,
+            date_debut DATETIME,
+            salaire INTEGER DEFAULT 0,
+            total_dette INTEGER DEFAULT 0,
+            total_paiement INTEGER DEFAULT 0,
+            epargne INTEGER DEFAULT 0,
+            prenom_tuteur BLOB(19) DEFAULT NULL,
+            nom_tuteur BLOB(19) DEFAULT NULL,
+            telephone_tuteur INTEGER NULL,
+            adresse_tuteur BLOB(19) DEFAULT NULL
+        );
 
-    mois_table = """CREATE TABLE IF NOT EXISTS MOIS
-    (
-        ID_MOIS INTEGER,
-        ANNEE INTEGER NULL,
-        JANVIER INTEGER NULL DEFAULT 0,
-        FEVRIER INTEGER NULL DEFAULT 0,
-        MARS INTEGER NULL DEFAULT 0,
-        AVRIL INTEGER NULL DEFAULT 0,
-        MAI INTEGER NULL DEFAULT 0,
-        JUIN INTEGER NULL DEFAULT 0,
-        JUILLET INTEGER NULL DEFAULT 0,
-        AOUT INTEGER NULL DEFAULT 0,
-        SEPTEMBRE INTEGER NULL DEFAULT 0,
-        OCTOBRE INTEGER NULL DEFAULT 0,
-        NOVEMBRE INTEGER NULL DEFAULT 0,
-        DECEMBRE INTEGER NULL DEFAULT 0
-    )"""
+        CREATE TABLE IF NOT EXISTS paiements
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
+            id_employee INTEGER,
+            annee INTEGER NULL,
+            janvier INTEGER NULL DEFAULT 0,
+            fevrier INTEGER NULL DEFAULT 0,
+            mars INTEGER NULL DEFAULT 0,
+            avril INTEGER NULL DEFAULT 0,
+            mai INTEGER NULL DEFAULT 0,
+            juin INTEGER NULL DEFAULT 0,
+            juillet INTEGER NULL DEFAULT 0,
+            aout INTEGER NULL DEFAULT 0,
+            septembre INTEGER NULL DEFAULT 0,
+            octobre INTEGER NULL DEFAULT 0,
+            novembre INTEGER NULL DEFAULT 0,
+            decembre INTEGER NULL DEFAULT 0,
+            total INTEGER NULL DEFAULT 0,
+            FOREIGN KEY(id_employee) REFERENCES employees(id)
+        );
 
-    tutuer_table = """CREATE TABLE IF NOT EXISTS TUTEUR_INFOS
-    (
-        ID_TUTEUR_INFOS INTEGER PRIMARY KEY AUTOINCREMENT,
-        T_FNAME VARCHAR(19),
-        T_LNAME VARCHAR(19),
-        T_NUMBER INTEGER,
-        T_ADRESS VARCHAR(19)
-    )"""
+        CREATE TABLE IF NOT EXISTS dettes
+        (
+            id INTEGER PRIMARY KEY AUTOINCREMENT NULL,
+            id_employee INTEGER,
+            date_credit DATETIME,
+            montant INTEGER DEFAULT 0,
+            FOREIGN KEY(id_employee) REFERENCES employees(id)
+        );
+        """
 
-    date_table = """CREATE TABLE IF NOT EXISTS DATE_INFOS
-    (
-        ID_DATE_INFOS INTEGER PRIMARY KEY AUTOINCREMENT,
-        DATE_IN DATETIME NULL,
-        DATE_OUT DATETIME NULL,
-        SALAIRE DATETIME NULL
-    )
-    """
+        self.curseur.executescript(database_tables)
+        self.connection.commit()
 
-    dette_table = """CREATE TABLE IF NOT EXISTS DETTE
-    (
-        ID_DETTE INTEGER,
-        MONTANT INTEGER DEFAULT 0
-    )"""
+    def saveEmployee(self, prenom: str, surnom: str, nom: str) -> None:
+        query = """INSERT INTO employees('prenom', 'surnom', 'nom') VALUES(?, ?, ?)"""
+        self.curseur.execute(query, (prenom, surnom, nom))
+        self.connection.commit()
 
-    somme_table = """CREATE TABLE IF NOT EXISTS SOMME
-    (
-        ID_SOMME INTEGER PRIMARY KEY AUTOINCREMENT,
-        TOTAL INTEGER NULL
-    )"""
-
-    somme_d_table = """CREATE TABLE IF NOT EXISTS SOMME_DETTE
-    (
-        ID_SOMME_DETTE INTEGER PRIMARY KEY AUTOINCREMENT,
-        TOTAL INTEGER NULL
-    )"""
-
-    curseur.execute(employee_table)
-    curseur.execute(mois_table)
-    curseur.execute(tutuer_table)
-    curseur.execute(date_table)
-    curseur.execute(dette_table)
-    curseur.execute(somme_table)
-    curseur.execute(somme_d_table)
-    connection.commit()
-
-    def inscription(prenom, surnom, nom):
-        query = """INSERT INTO EMPLOYEE(PRENOM, SURNOM, NOM)
-        VALUES(?, ?, ?)"""
-        curseur.execute(query, (prenom, surnom, nom))
-        DataBase.insertIntoDateInfo()
-        DataBase.insertIntoTuteur()
-        DataBase.insertIntoSomme()
-        DataBase.insertIntoSommeDette()
-        connection.commit()
-
-    def laListe(filtre_value):
-        if filtre_value=="Tous":
-            query = "SELECT * FROM EMPLOYEE"
-            curseur.execute(query)
-            rows = curseur.fetchall()
-            return rows
-        else:
-            query = "SELECT * FROM EMPLOYEE WHERE NOM = ?"
-            curseur.execute(query, (filtre_value,))
-            rows = curseur.fetchall()
-            return rows
-    
-    def isSaved(prenom, surnom, nom):
-        query = "SELECT * FROM EMPLOYEE WHERE PRENOM = ? AND SURNOM = ? AND NOM = ?"
-        curseur.execute(query, (prenom, surnom, nom))
-        if curseur.fetchall():
+    def checEmployeeExistence(self, prenom: str, surnom: str, nom: str) -> bool:
+        query = """SELECT * FROM employees WHERE prenom=? AND surnom=? AND nom=?"""
+        self.curseur.execute(query, (prenom, surnom, nom))
+        if (self.curseur.fetchall()):
             return True
         else:
             return False
 
-    def insertIntoSomme():
-        query = """INSERT INTO SOMME(TOTAL)
-                VALUES(NULL)
-                """
-        curseur.execute(query)
-        connection.commit()
+    def updateEmployee(self):
+        query = """"""
+        self.curseur.execute()
+        self.connection.commit()
 
-    def insertIntoDateInfo():
-        query = """INSERT INTO DATE_INFOS(DATE_IN, DATE_OUT, SALAIRE)
-                VALUES('', '', '')
-                """
-        curseur.execute(query)
-        connection.commit()
-
-    def insertIntoTuteur():
-        query = """INSERT INTO TUTEUR_INFOS(T_FNAME, T_LNAME, T_NUMBER, T_ADRESS)
-                VALUES('', '', '', '')
-                """
-        curseur.execute(query)
-        connection.commit()
-
-    def insertIntoSommeDette():
-        query = """INSERT INTO SOMME_DETTE(TOTAL)
-                VALUES(NULL)
-                """
-        curseur.execute(query)
-        connection.commit()
-       
-    def getNomListe():
-        query = "SELECT DISTINCT NOM FROM EMPLOYEE"
-        result = list()
-        curseur.execute(query)
-        rows = curseur.fetchall()
-        for i in range(len(rows)):
-            result.append(rows[i][0])
-        result.sort()
+    def getEmployeeById(self, id: int) -> list:
+        query = """SELECT * FROM employees WHERE id=?"""
+        self.curseur.execute(query, (id,))
+        result = self.curseur.fetchall()
         return result
 
-    def getPaiementValue(ID, year):
-        query = f"""SELECT JANVIER, FEVRIER, MARS, AVRIL, MAI, JUIN, JUILLET, AOUT,
-                SEPTEMBRE, OCTOBRE, NOVEMBRE, DECEMBRE
-                FROM MOIS
-                WHERE ID_MOIS = {ID}
-                AND ANNEE = {year}
-                """
-        curseur.execute(query)
-        result = curseur.fetchall()
+    def getEmployeesByNom(self, nom: str) -> list:
+        if (nom=='Tous' or nom=='tous'):
+            query = """SELECT id, prenom, surnom, nom, date_entrer, salaire, total_paiement, total_dette, epargne FROM employees"""
+            self.curseur.execute(query)
+            result = self.curseur.fetchall()
+            return result
+        else:
+            query = """SELECT id, prenom, surnom, nom, date_entrer, salaire, total_paiement, total_dette, epargne FROM employees WHERE nom=?"""
+            self.curseur.execute(query, (nom,))
+            result = self.curseur.fetchall()
+            return result
+
+    def insertPaiement(self, id: int, annee: int):
+        self.curseur.execute(f"INSERT INTO paiements('id_employee', 'annee') VALUES({id}, {annee})")
+        self.connection.commit()
+
+    def insertDette(self, id: int, date: str, montant: int):
+        query = """INSERT INTO dettes('id_employee', 'date_credit', 'montant') VALUES(?, ?, ?)"""
+        self.curseur.execute(query, (id, date, montant))
+        self.connection.commit()
+
+    def checkAnneeExistence(self, id: int, annee) -> list:
+        checking_query = """SELECT * FROM paiements WHERE id=? AND annee=?"""
+        self.curseur.execute(checking_query, (id, annee))
+        result = self.curseur.fetchall()
         return result
-    
-    def updatePaiement(ID, year, mois, salaire):
-        if (ID=="" or len(str(year))!=4) or str(salaire)=="":
+
+    # To be review about redondance
+    def getYearPaiement(self, id: int, annee: int) -> list:
+        query = """SELECT * FROM paiements WHERE id_employee=? AND annee=?"""
+        self.curseur.execute(query, (id, annee))
+        result = self.curseur.fetchall()
+        return result
+
+    def updatePaiement(self, id: int, year: int, mois: str, salaire: int) -> None:
+        if (id == "" or len(str(year)) != 4) or str(salaire) == "":
             pass
         else:
-            query = f"""UPDATE MOIS SET {mois}={salaire} WHERE ID_MOIS={ID} AND ANNEE={year}
-                    """
-            curseur.execute(query)
-            connection.commit()
+            query = f"""UPDATE paiements SET {mois}={salaire} WHERE id_employee={id} AND annee={year}"""
+            self.curseur.execute(query)
+            self.connection.commit()
 
-    def insertIntoMois(ID, year):
-        query = f"""INSERT INTO MOIS(ID_MOIS, ANNEE)
-                    VALUES({ID}, {year})
-                """
-        curseur.execute(query)
-        connection.commit()
+    def updateTotal(self, id: int, year: int):
+        query = """
+            UPDATE paiements
+            SET total = janvier+fevrier+mars+avril+mai+juin+juillet+aout+septembre+octobre+novembre+decembre
+            WHERE id_employee = ?
+            AND annee = ?
+        """
+        self.curseur.execute(query, (id, year))
+        self.connection.commit()
 
-    def checkYear(ID, year):
-        query = f"""SELECT ID_MOIS, ANNEE
-                    FROM MOIS
-                    WHERE ID_MOIS = {ID}
-                    AND ANNEE = {year}
-                """
-        curseur.execute(query)
-        result = curseur.fetchall()
-        return result
-    
-    def isPaied(ID, mois, year):
-        query = f"""SELECT {mois}
-                    FROM MOIS
-                    WHERE ID_MOIS = {ID}
-                    AND ANNEE = {year}
-                """
-        curseur.execute(query)
-        result = curseur.fetchall()
+    def getUpdateTotal(self, id: int, annee: int) -> int:
+        query = """SELECT total FROM paiements WHERE id_employee=? AND annee=?"""
+        self.curseur.execute(query, (id, annee))
+        result = self.curseur.fetchall()
+        if (result):
+            result = result[0][0]
+        else:
+            result = 0
         return result
 
-    def updateSomme(id):
-        query = """UPDATE SOMME
-        SET TOTAL =
-        (
-            SELECT SUM(JANVIER)+SUM(FEVRIER)+SUM(MARS)+
-                    SUM(AVRIL)+SUM(MAI)+SUM(JUIN)+
-                    SUM(JUILLET)+SUM(AOUT)+SUM(SEPTEMBRE)+
-                    SUM(OCTOBRE)+SUM(NOVEMBRE)+SUM(DECEMBRE)
-            FROM MOIS
-            WHERE ID_MOIS IS ?
+    def getTotalDette(self, id: int) -> int:
+        query = """SELECT total_dette FROM employees WHERE id=?"""
+        self.curseur.execute(query, (id,))
+        result = self.curseur.fetchall()
+        if (result):
+            result = result[0][0]
+        else:
+            result = 0
+        return result
+
+    def updateTotalDette(self, id: int) -> None:
+        query = f"""UPDATE employees
+            SET total_dette =
+            (
+                SELECT SUM(montant)
+                FROM dettes
+                WHERE id_employee = {id}
+            )
+            WHERE id = {id}
+        """
+        self.curseur.execute(query)
+        self.connection.commit()
+
+    def getUserForUpdate(self, id: int) -> list[any]:
+        query = """
+            SELECT prenom, surnom, nom, date_entrer, salaire, date_debut,
+            prenom_tuteur, nom_tuteur, telephone_tuteur, adresse_tuteur
+            FROM employees
+            WHERE id = ?
+        """
+        self.curseur.execute(query, (id,))
+        result = self.curseur.fetchall()
+        return result
+
+    def updateEmployee(self, id, prenom, surnom, nom,
+                date_in, date_start, salaire,
+                t_prenom, t_nom, t_contact, t_adress):
+        query = f"""
+            UPDATE employees
+            SET prenom = ?, surnom = ?, nom = ?, date_entrer = ?, salaire = ?,
+            date_debut = ?, prenom_tuteur = ?, nom_tuteur = ?, telephone_tuteur = ?, adresse_tuteur = ?
+            WHERE id = {id}
+        """
+        self.curseur.execute(
+            query, (
+                prenom, surnom, nom, date_in, salaire,
+                date_start, t_prenom, t_nom, t_contact, t_adress
+            )
         )
-        WHERE ID_SOMME IS ?
+        self.connection.commit()
+
+    def updateTotalPaiement(self, id: int) -> None:
+        query = f"""
+                UPDATE employees
+                SET total_paiement =
+                (
+                    SELECT SUM(total)
+                    FROM paiements
+                    WHERE id = {id}
+                )
+                WHERE id = {id}
                 """
-        curseur.execute(query, (id, id))
-        connection.commit()
+        self.curseur.execute(query)
+        self.connection.commit()
 
-    def updateSommeDette(id):
-        query = """UPDATE SOMME_DETTE
-        SET TOTAL =
-        (
-            SELECT SUM(MONTANT)
-            FROM DETTE
-            WHERE ID_DETTE IS ?
-        )
-        WHERE ID_SOMME_DETTE IS ?
+    def updateEpargne(self, id: int) -> None:
+        query = f"""
+        UPDATE employees
+        SET epargne = (total_paiement - total_dette)
+        WHERE id = {id}
         """
-        curseur.execute(query, (id, id))
-        connection.commit()
-
-    def getSommeUpdate(id):
-        query = """SELECT TOTAL
-                    FROM SOMME
-                    WHERE ID_SOMME IS ?
-                """
-        curseur.execute(query, (id,))
-        rows = curseur.fetchall()
-        return rows
-
-    def getSommeDette(id):
-        query = f"""SELECT TOTAL
-        FROM SOMME_DETTE
-        WHERE ID_SOMME_DETTE = ?
-        """
-        curseur.execute(query, (id,))
-        rows = curseur.fetchall()
-        return rows
-
-    def getEmployeeByID(id):
-        employee_infos = f"""SELECT PRENOM, SURNOM, NOM
-        FROM EMPLOYEE
-        WHERE ID_EMPLOYEE = {id}
-        """
-        date_infos = f"""SELECT DATE_IN, DATE_OUT, SALAIRE
-        FROM DATE_INFOS
-        WHERE ID_DATE_INFOS = {id}
-        """
-
-        tuteur_infos = f"""SELECT T_FNAME, T_LNAME, T_NUMBER, T_ADRESS
-        FROM TUTEUR_INFOS
-        WHERE ID_TUTEUR_INFOS = {id}
-        """
-
-        curseur.execute(employee_infos)
-        employee_infos_result = curseur.fetchall()
-        curseur.execute(date_infos)
-        date_infos_result = curseur.fetchall()
-        curseur.execute(tuteur_infos)
-        tuteur_infos_result = curseur.fetchall()
-        result = employee_infos_result + date_infos_result + tuteur_infos_result
-        return result
-
-    def setDette(id, montant):
-        query = """INSERT INTO DETTE(ID_DETTE, MONTANT)
-                    VALUES(?, ?)
-                """
-        curseur.execute(query, (id, montant))
-        connection.commit()
-
-
-    def setUpdate(uId, uPrenom, uSurnom, uNom, uDateIn, uDateOut, uSalaire, uAdresse, uTPrenom, uTNom, uTContact):
-        query = """UPDATE EMPLOYEE
-        SET PRENOM = ?, SURNOM = ?, NOM = ?
-        WHERE ID_EMPLOYEE = ?
-        """
-        query2 = """UPDATE DATE_INFOS
-        SET DATE_IN = ?, DATE_OUT = ?, SALAIRE = ?
-        WHERE ID_DATE_INFOS = ?
-        """
-        query3 = """UPDATE TUTEUR_INFOS
-        SET T_FNAME = ?, T_LNAME = ?, T_NUMBER = ?, T_ADRESS = ?
-        WHERE ID_TUTEUR_INFOS = ?
-        """
-        curseur.execute(query,(uPrenom, uSurnom, uNom, uId))
-        curseur.execute(query2, (uDateIn, uDateOut, uSalaire, uId))
-        curseur.execute(query3, (uAdresse, uTPrenom, uTNom, uTContact, uId))
-        connection.commit()
+        print("Epargne update")
+        self.curseur.execute(query)
+        self.connection.commit()
 
 if __name__ == "__main__":
-    launch = DataBase()
+    backend = DataBase()
